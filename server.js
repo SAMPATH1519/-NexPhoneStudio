@@ -13,6 +13,7 @@ import authHandler from './api/auth.js';
 import ordersHandler from './api/orders.js';
 import configHandler from './api/config.js';
 import adminHandler from './api/admin.js';
+import productsHandler from './api/products.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -100,6 +101,8 @@ const server = http.createServer(async (req, res) => {
           await configHandler(req, res);
         } else if (pathname.startsWith('/api/admin')) {
           await adminHandler(req, res);
+        } else if (pathname.startsWith('/api/products')) {
+          await productsHandler(req, res);
         } else {
           res.status(404).json({ error: 'Not Found', message: `Endpoint ${pathname} not found` });
         }

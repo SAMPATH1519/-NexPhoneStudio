@@ -90,6 +90,22 @@ document.addEventListener('DOMContentLoaded', () => {
   renderProducts();
   renderCart();
   checkAuthSession();
+  loadProductsFromBackend();
+
+  // Load live products catalog from backend database
+  async function loadProductsFromBackend() {
+    try {
+      const res = await fetch('/api/products');
+      if (!res.ok) throw new Error('API request failed');
+      const data = await res.json();
+      if (data.products && Array.isArray(data.products) && data.products.length > 0) {
+        state.products = data.products;
+        renderProducts();
+      }
+    } catch (e) {
+      console.warn('Using local PRODUCTS_DATA cache:', e.message);
+    }
+  }
 
   // =========================================================================
   // Filter & Search Handling
@@ -136,19 +152,19 @@ document.addEventListener('DOMContentLoaded', () => {
     return state.products.filter(p => {
       if (state.searchQuery) {
         const query = state.searchQuery;
-        const matchTitle = p.model.toLowerCase().includes(query);
-        const matchBrand = p.brand.toLowerCase().includes(query);
-        const matchProcessor = p.processor.toLowerCase().includes(query);
-        const matchFeature = p.key_features.some(f => f.toLowerCase().includes(query));
+        const matchTitle = (p.model || '').toLowerCase().includes(query);
+        const matchBrand = (p.brand || '').toLowerCase().includes(query);
+        const matchProcessor = (p.processor || '').toLowerCase().includes(query);
+        const matchFeature = (p.key_features || []).some(f => String(f).toLowerCase().includes(query));
         if (!matchTitle && !matchBrand && !matchProcessor && !matchFeature) return false;
       }
 
       if (state.selectedBrand !== 'all') {
-        if (p.brand.toLowerCase() !== state.selectedBrand.toLowerCase()) return false;
+        if ((p.brand || '').toLowerCase() !== state.selectedBrand.toLowerCase()) return false;
       }
 
       if (state.selectedPriceRange !== 'all') {
-        const price = p.price;
+        const price = Number(p.price);
         if (state.selectedPriceRange === 'under-20k' && price >= 20000) return false;
         if (state.selectedPriceRange === '20k-25k' && (price < 20000 || price > 25000)) return false;
         if (state.selectedPriceRange === '25k-50k' && (price < 25000 || price > 50000)) return false;
@@ -157,7 +173,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (state.selectedRam !== 'all') {
         const ramSize = parseInt(state.selectedRam, 10);
-        if (p.ram_size_gb !== ramSize) return false;
+        const productRam = p.ram_size_gb || parseInt(p.ram, 10) || 0;
+        if (productRam !== ramSize) return false;
       }
 
       return true;
@@ -186,35 +203,43 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    productGrid.innerHTML = filtered.map(p => `
+    productGrid.innerHTML = filtered.map(p => {
+      const ramPill = (p.ram || '8GB').split(' ')[0];
+      const storagePill = (p.storage || '128GB').split(' ')[0];
+      const cameraPill = (p.camera || '50MP').split('+')[0].trim();
+      const batteryPill = (p.battery || '5000 mAh').split('(')[0].trim();
+      const processorPill = (p.processor || 'Octa-Core 5G').split('(')[0].trim();
+      const isOutOfStock = p.stock === 0;
+
+      return `
       <div class="product-card" data-product-id="${p.id}">
         <div class="card-top">
           <span class="card-brand">${p.brand}</span>
-          <span class="card-badge">${p.badge || 'Official Stock'}</span>
+          <span class="card-badge ${isOutOfStock ? 'badge-out' : ''}">${isOutOfStock ? 'Out of Stock' : (p.badge || 'Official Stock')}</span>
         </div>
 
-        <div class="card-img-preview">
+        <div class="card-img-preview" data-details-id="${p.id}" style="cursor: pointer;">
           <img src="${p.image || `/images/${p.id}.jpg`}" alt="${p.model}" class="product-thumb-img" loading="lazy" onerror="this.onerror=null;this.src='/images/oneplus-nord-ce4.jpg';">
         </div>
 
-        <h3 class="card-title" title="${p.model}">${p.model}</h3>
+        <h3 class="card-title" title="${p.model}" data-details-id="${p.id}" style="cursor: pointer;">${p.model}</h3>
 
         <div class="card-price-row">
-          <span class="card-price">₹${p.price.toLocaleString('en-IN')}</span>
-          <span class="card-mrp">₹${p.mrp.toLocaleString('en-IN')}</span>
-          <span class="card-discount">${p.discount}</span>
+          <span class="card-price">₹${Number(p.price).toLocaleString('en-IN')}</span>
+          <span class="card-mrp">₹${Number(p.mrp || p.price).toLocaleString('en-IN')}</span>
+          <span class="card-discount">${p.discount || ''}</span>
         </div>
 
         <div class="specs-compact-row">
-          <span class="spec-pill" title="RAM & Storage">💾 ${p.ram.split(' ')[0]} / ${p.storage.split(' ')[0]}</span>
-          <span class="spec-pill" title="Camera">📸 ${p.camera.split('+')[0].trim()}</span>
-          <span class="spec-pill" title="Battery">🔋 ${p.battery.split('(')[0].trim()}</span>
-          <span class="spec-pill" title="Processor">⚡ ${p.processor.split('(')[0].trim()}</span>
+          <span class="spec-pill" title="RAM & Storage">💾 ${ramPill} / ${storagePill}</span>
+          <span class="spec-pill" title="Camera">📸 ${cameraPill}</span>
+          <span class="spec-pill" title="Battery">🔋 ${batteryPill}</span>
+          <span class="spec-pill" title="Processor">⚡ ${processorPill}</span>
         </div>
 
         <div class="card-actions">
-          <button class="btn-card-cart" data-cart-add="${p.id}" title="Add to Cart">
-            <span>🛒</span> + Cart
+          <button class="btn-card-cart ${isOutOfStock ? 'disabled' : ''}" data-cart-add="${p.id}" ${isOutOfStock ? 'disabled' : ''} title="${isOutOfStock ? 'Out of stock' : 'Add to Cart'}">
+            <span>🛒</span> ${isOutOfStock ? 'Sold Out' : '+ Cart'}
           </button>
           <button class="btn-card-ask" data-ask-phone="${p.model}">
             <span>✨</span> Ask AI
@@ -224,7 +249,8 @@ document.addEventListener('DOMContentLoaded', () => {
           </button>
         </div>
       </div>
-    `).join('');
+    `;
+    }).join('');
 
     attachCardActionHandlers();
   }
@@ -323,7 +349,7 @@ document.addEventListener('DOMContentLoaded', () => {
       <div style="margin-bottom: 1.5rem;">
         <h4 style="font-size: 0.95rem; margin-bottom: 0.5rem; color: var(--text-primary);">Key Highlights:</h4>
         <ul style="padding-left: 1.25rem; color: var(--text-secondary); font-size: 0.85rem; line-height: 1.6;">
-          ${product.key_features.map(f => `<li>${f}</li>`).join('')}
+          ${(product.key_features || []).map(f => `<li>${f}</li>`).join('')}
         </ul>
       </div>
 
