@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard • NexPhone Studio & Arudra Mobiles</title>
+  <meta name="description" content="Management portal for NexPhone Studio and Arudra Mobiles. Manage customer orders, track real-time revenue, update shipping status, and oversee inventory.">
+  <link rel="stylesheet" href="/css/admin.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+</head>
+<body>
+
+  <!-- =========================================================================
+       1. Admin PIN Lockscreen (Security Gatekeeper)
+       ========================================================================= -->
+  <div class="admin-lockscreen-backdrop" id="admin-lockscreen">
+    <div class="admin-lockscreen-card">
+      <div class="lockscreen-icon">🔒</div>
+      <h2 class="lockscreen-title">Admin Access Portal</h2>
+      <p class="lockscreen-desc">NexPhone Studio & Arudra Mobiles</p>
+
+      <form id="lockscreen-form">
+        <div class="pin-input-group">
+          <input 
+            type="password" 
+            id="admin-pin-input" 
+            class="pin-input" 
+            placeholder="••••" 
+            maxlength="16" 
+            required 
+            autocomplete="current-password"
+            autofocus
+          >
+          <div class="lockscreen-error" id="lockscreen-error"></div>
+        </div>
+        <button type="submit" class="btn-unlock" id="btn-unlock">
+          <span>Unlock Dashboard</span> →
+        </button>
+      </form>
+      <div class="lockscreen-hint">
+        Default Passcode: <strong>admin1234</strong> (set via .env)
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       2. Admin Main Layout
+       ========================================================================= -->
+  <div class="admin-layout" id="admin-layout">
+
+    <!-- Sidebar -->
+    <aside class="admin-sidebar" id="admin-sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo-icon">⚡</div>
+        <div class="sidebar-logo-text">NexPhone <span>Admin</span></div>
+        <span class="sidebar-badge">v2.0</span>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-label">Main Menu</div>
+        <button class="sidebar-btn active" data-tab="overview">
+          <span>📊</span>
+          <span>Overview</span>
+        </button>
+        <button class="sidebar-btn" data-tab="orders">
+          <span>🛍️</span>
+          <span>Orders</span>
+          <span class="btn-badge" id="sidebar-order-badge">0</span>
+        </button>
+        <button class="sidebar-btn" data-tab="products">
+          <span>📱</span>
+          <span>Inventory</span>
+        </button>
+        <button class="sidebar-btn" data-tab="customers">
+          <span>👥</span>
+          <span>Customers</span>
+        </button>
+
+        <div class="nav-section-label">Platform</div>
+        <button class="sidebar-btn" data-tab="system">
+          <span>⚡</span>
+          <span>Cloud & System</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <a href="/" class="btn-store-link" target="_blank" rel="noopener">
+          <span>🏪</span> Open Storefront ↗
+        </a>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="admin-main">
+      <!-- Topbar -->
+      <header class="admin-topbar">
+        <div class="topbar-left">
+          <h1 class="topbar-title" id="page-heading">Store Overview</h1>
+          <div class="topbar-sync-status" id="cloud-sync-status">
+            <span class="status-pulsar"></span>
+            <span id="cloud-sync-text">Connecting...</span>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <div class="live-clock" id="live-clock">--:--:--</div>
+          <button class="btn-topbar-action" id="btn-refresh-data" title="Refresh data">
+            <span>🔄</span> Refresh
+          </button>
+          <button class="btn-topbar-action" id="btn-lock-admin" title="Lock session">
+            <span>🔒</span> Lock
+          </button>
+        </div>
+      </header>
+
+      <!-- Content Views -->
+      <div class="admin-content">
+
+        <!-- ===================================================================
+             Tab 1: Overview (KPIs & Recent Orders)
+             =================================================================== -->
+        <section class="admin-tab-pane active" id="pane-overview">
+          <!-- KPI Stats Grid -->
+          <div class="stats-grid">
+            <div class="stat-card card-revenue">
+              <div class="stat-card-header">
+                <span class="stat-card-title">Total Revenue</span>
+                <span class="stat-card-icon">💵</span>
+              </div>
+              <div class="stat-card-value" id="kpi-revenue">₹0</div>
+              <div class="stat-card-sub">
+                <span class="trend-up">100% genuine</span> gross sales
+              </div>
+            </div>
+
+            <div class="stat-card card-orders">
+              <div class="stat-card-header">
+                <span class="stat-card-title">Total Orders</span>
+                <span class="stat-card-icon">📦</span>
+              </div>
+              <div class="stat-card-value" id="kpi-orders">0</div>
+              <div class="stat-card-sub">
+                Lifetime recorded orders
+              </div>
+            </div>
+
+            <div class="stat-card card-active">
+              <div class="stat-card-header">
+                <span class="stat-card-title">Active / In-Transit</span>
+                <span class="stat-card-icon">🚚</span>
+              </div>
+              <div class="stat-card-value" id="kpi-active">0</div>
+              <div class="stat-card-sub">
+                Needs delivery or shipping
+              </div>
+            </div>
+
+            <div class="stat-card card-customers">
+              <div class="stat-card-header">
+                <span class="stat-card-title">Registered Customers</span>
+                <span class="stat-card-icon">👥</span>
+              </div>
+              <div class="stat-card-value" id="kpi-customers">0</div>
+              <div class="stat-card-sub">
+                Verified customer accounts
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Orders Panel -->
+          <div class="table-panel">
+            <div class="table-panel-header">
+              <div class="panel-title-group">
+                <h3>Recent Customer Orders</h3>
+                <p>Latest customer transactions placed through the store</p>
+              </div>
+              <button class="btn-topbar-action" id="btn-view-all-orders">
+                View All Orders →
+              </button>
+            </div>
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Order #</th>
+                    <th>Date</th>
+                    <th>Customer</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Quick Action</th>
+                  </tr>
+                </thead>
+                <tbody id="overview-recent-orders-tbody">
+                  <tr><td colspan="6" class="table-empty-row">Loading recent orders...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             Tab 2: Orders Management
+             =================================================================== -->
+        <section class="admin-tab-pane" id="pane-orders">
+          <div class="table-panel">
+            <div class="table-panel-header">
+              <div class="panel-title-group">
+                <h3>All Orders & Shipments</h3>
+                <p>Manage order status, inspect delivery addresses, and track fulfillment</p>
+              </div>
+
+              <!-- Toolbar -->
+              <div class="table-toolbar">
+                <div class="search-input-box">
+                  <span class="search-icon-fixed">🔍</span>
+                  <input type="text" id="order-search-input" placeholder="Search order, name, phone...">
+                </div>
+
+                <select id="order-status-filter" class="status-filter-select">
+                  <option value="all">All Statuses</option>
+                  <option value="Confirmed">Confirmed</option>
+                  <option value="Processing">Processing</option>
+                  <option value="Shipped">Shipped</option>
+                  <option value="Out for Delivery">Out for Delivery</option>
+                  <option value="Delivered">Delivered</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+
+                <button class="btn-csv-export" id="btn-export-csv" title="Export current orders to CSV">
+                  <span>📥</span> Export CSV
+                </button>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Order #</th>
+                    <th>Date</th>
+                    <th>Customer</th>
+                    <th>Items Ordered</th>
+                    <th>Total</th>
+                    <th>Payment</th>
+                    <th>Status</th>
+                    <th>Change Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="orders-table-tbody">
+                  <tr><td colspan="9" class="table-empty-row">Loading orders...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             Tab 3: Inventory & Catalog
+             =================================================================== -->
+        <section class="admin-tab-pane" id="pane-products">
+          <div class="table-panel">
+            <div class="table-panel-header">
+              <div class="panel-title-group">
+                <h3>Storefront Inventory Catalog</h3>
+                <p>Live smartphones currently listed in the store catalog</p>
+              </div>
+              <div class="table-toolbar">
+                <div class="search-input-box">
+                  <span class="search-icon-fixed">🔍</span>
+                  <input type="text" id="product-search-input" placeholder="Filter by phone name or brand...">
+                </div>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Brand</th>
+                    <th>RAM & Storage</th>
+                    <th>Price</th>
+                    <th>MRP / Discount</th>
+                    <th>Rating</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="products-table-tbody">
+                  <!-- Dynamically injected from PRODUCTS_DATA -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             Tab 4: Customer Directory
+             =================================================================== -->
+        <section class="admin-tab-pane" id="pane-customers">
+          <div class="table-panel">
+            <div class="table-panel-header">
+              <div class="panel-title-group">
+                <h3>Registered Customer Directory</h3>
+                <p>Customers registered via Google Sign-In or store checkout</p>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email Address</th>
+                    <th>Joined Date</th>
+                    <th>Total Orders</th>
+                    <th>Total Spent</th>
+                  </tr>
+                </thead>
+                <tbody id="customers-table-tbody">
+                  <tr><td colspan="6" class="table-empty-row">Loading customer records...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             Tab 5: System & Cloud Health
+             =================================================================== -->
+        <section class="admin-tab-pane" id="pane-system">
+          <div class="system-health-grid">
+            <div class="health-card">
+              <div class="health-card-title">
+                <span>🔥</span> Firebase Cloud Architecture
+              </div>
+              <div class="health-item">
+                <span class="health-label">Project ID</span>
+                <span class="health-val" id="sys-fb-project">arudra-moblies</span>
+              </div>
+              <div class="health-item">
+                <span class="health-label">Firebase Auth</span>
+                <span class="health-val" style="color: var(--success);">Google & Email Active ✅</span>
+              </div>
+              <div class="health-item">
+                <span class="health-label">Cloud Firestore</span>
+                <span class="health-val" style="color: var(--success);">Orders Collection Synced ✅</span>
+              </div>
+              <div class="health-item">
+                <span class="health-label">SDK Integration</span>
+                <span class="health-val">Modular v10 (CDN Zero-Dependency)</span>
+              </div>
+            </div>
+
+            <div class="health-card">
+              <div class="health-card-title">
+                <span>💾</span> Local SQLite Engine
+              </div>
+              <div class="health-item">
+                <span class="health-label">Database File</span>
+                <span class="health-val">data/store.db</span>
+              </div>
+              <div class="health-item">
+                <span class="health-label">Driver</span>
+                <span class="health-val">node:sqlite (DatabaseSync)</span>
+              </div>
+              <div class="health-item">
+                <span class="health-label">Journal Mode</span>
+                <span class="health-val" style="color: var(--accent);">WAL (High Concurrency)</span>
+              </div>
+              <div class="health-item">
+                <span class="health-label">Tables</span>
+                <span class="health-val">users, sessions, orders</span>
+              </div>
+            </div>
+
+            <div class="health-card">
+              <div class="health-card-title">
+                <span>🤖</span> AI RAG Shopping Assistant
+              </div>
+              <div class="health-item">
+                <span class="health-label">LLM Provider</span>
+                <span class="health-val">OpenRouter / OpenAI</span>
+              </div>
+              <div class="health-item">
+                <span class="health-label">Model</span>
+                <span class="health-val">openai/gpt-4o-mini</span>
+              </div>
+              <div class="health-item">
+                <span class="health-label">Local Fallback</span>
+                <span class="health-val" style="color: var(--success);">BM25 Grounded RAG Active ✅</span>
+              </div>
+              <div class="health-item">
+                <span class="health-label">Status</span>
+                <span class="health-val">Serving on /api/chat</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- =========================================================================
+       3. Order Details Modal
+       ========================================================================= -->
+  <div class="order-detail-backdrop" id="order-detail-backdrop" role="dialog" aria-modal="true">
+    <div class="order-detail-modal" id="order-detail-modal">
+      <div class="order-detail-header">
+        <div>
+          <h3 id="modal-order-number" style="font-size: 1.3rem; color: var(--primary);">NEX-000000</h3>
+          <p id="modal-order-date" style="font-size: 0.82rem; color: var(--text-muted);">Placed on ...</p>
+        </div>
+        <button class="order-detail-close" id="modal-order-close" aria-label="Close modal">✕</button>
+      </div>
+
+      <div class="detail-section-title">Customer Information</div>
+      <div class="detail-grid-2">
+        <div class="detail-info-box">
+          <label>Full Name</label>
+          <span id="modal-cust-name">-</span>
+        </div>
+        <div class="detail-info-box">
+          <label>Phone Number</label>
+          <span id="modal-cust-phone">-</span>
+        </div>
+        <div class="detail-info-box" style="grid-column: 1 / -1;">
+          <label>Email Address</label>
+          <span id="modal-cust-email">-</span>
+        </div>
+        <div class="detail-info-box" style="grid-column: 1 / -1;">
+          <label>Delivery Address</label>
+          <span id="modal-cust-address">-</span>
+        </div>
+      </div>
+
+      <div class="detail-section-title">Items Ordered</div>
+      <div class="detail-items-list" id="modal-items-list">
+        <!-- Dynamically injected -->
+      </div>
+
+      <div class="detail-grid-2" style="margin-top: 1rem;">
+        <div class="detail-info-box">
+          <label>Payment Method</label>
+          <span id="modal-payment-method">-</span>
+        </div>
+        <div class="detail-info-box">
+          <label>Total Amount</label>
+          <span id="modal-total-amount" style="color: var(--success); font-size: 1.1rem;">₹0</span>
+        </div>
+      </div>
+
+      <div style="margin-top: 1.5rem; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--admin-border); padding-top: 1.25rem;">
+        <div>
+          <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.35rem;">Update Order Status:</label>
+          <select id="modal-status-select" class="status-changer-select" style="padding: 0.5rem 0.85rem; font-size: 0.9rem;">
+            <option value="Confirmed">Confirmed</option>
+            <option value="Processing">Processing</option>
+            <option value="Shipped">Shipped</option>
+            <option value="Out for Delivery">Out for Delivery</option>
+            <option value="Delivered">Delivered</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+        </div>
+        <button class="btn-topbar-action" id="modal-btn-save-status" style="background: var(--primary); color: #fff; border-color: var(--primary);">
+          Save Status
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="/js/products-data.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+</html>
