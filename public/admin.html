@@ -4,11 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Dashboard • NexPhone Studio & Arudra Mobiles</title>
-  <meta name="description" content="Management portal for NexPhone Studio and Arudra Mobiles. Manage customer orders, track real-time revenue, update shipping status, and oversee inventory.">
+  <meta name="description" content="Secure administrative management portal for NexPhone Studio and Arudra Mobiles. Manage customer orders, track sales analytics, manage inventory, and monitor AI chatbot inquiries.">
   <link rel="stylesheet" href="/css/admin.css">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
 </head>
-<body>
+<body data-theme="dark">
 
   <!-- =========================================================================
        1. Admin PIN Lockscreen (Security Gatekeeper)
@@ -26,7 +26,7 @@
             id="admin-pin-input" 
             class="pin-input" 
             placeholder="••••" 
-            maxlength="16" 
+            maxlength="24" 
             required 
             autocomplete="current-password"
             autofocus
@@ -38,7 +38,7 @@
         </button>
       </form>
       <div class="lockscreen-hint">
-        Default Passcode: <strong>admin1234</strong> (set via .env)
+        Default Passcode: <strong>admin1234</strong> (or email <code>admin@arudramobiles.com</code>)
       </div>
     </div>
   </div>
@@ -48,12 +48,12 @@
        ========================================================================= -->
   <div class="admin-layout" id="admin-layout">
 
-    <!-- Sidebar -->
+    <!-- Sidebar Navigation -->
     <aside class="admin-sidebar" id="admin-sidebar">
       <div class="sidebar-header">
         <div class="sidebar-logo-icon">⚡</div>
         <div class="sidebar-logo-text">NexPhone <span>Admin</span></div>
-        <span class="sidebar-badge">v2.0</span>
+        <span class="sidebar-badge">v2.5</span>
       </div>
 
       <nav class="sidebar-nav">
@@ -67,19 +67,39 @@
           <span>Orders</span>
           <span class="btn-badge" id="sidebar-order-badge">0</span>
         </button>
+        <button class="sidebar-btn" data-tab="users">
+          <span>👥</span>
+          <span>Users</span>
+          <span class="btn-badge" id="sidebar-user-badge">0</span>
+        </button>
         <button class="sidebar-btn" data-tab="products">
           <span>📱</span>
-          <span>Inventory</span>
-        </button>
-        <button class="sidebar-btn" data-tab="customers">
-          <span>👥</span>
-          <span>Customers</span>
+          <span>Products</span>
         </button>
 
-        <div class="nav-section-label">Platform</div>
-        <button class="sidebar-btn" data-tab="system">
+        <div class="nav-section-label">Intelligence</div>
+        <button class="sidebar-btn" data-tab="analytics">
+          <span>📈</span>
+          <span>Sales Analytics</span>
+        </button>
+        <button class="sidebar-btn" data-tab="chatbot">
+          <span>🤖</span>
+          <span>AI Chatbot</span>
+        </button>
+        <button class="sidebar-btn" data-tab="activity">
           <span>⚡</span>
-          <span>Cloud & System</span>
+          <span>Recent Activity</span>
+        </button>
+        <button class="sidebar-btn" data-tab="stock-alerts">
+          <span>⚠️</span>
+          <span>Low Stock Alerts</span>
+          <span class="btn-badge badge-danger" id="sidebar-stock-badge" style="display: none;">0</span>
+        </button>
+
+        <div class="nav-section-label">System</div>
+        <button class="sidebar-btn" data-tab="system">
+          <span>☁️</span>
+          <span>Cloud & Firebase</span>
         </button>
       </nav>
 
@@ -90,47 +110,49 @@
       </div>
     </aside>
 
-    <!-- Main Content Area -->
+    <!-- Main Content -->
     <main class="admin-main">
       <!-- Topbar -->
       <header class="admin-topbar">
         <div class="topbar-left">
-          <h1 class="topbar-title" id="page-heading">Store Overview</h1>
+          <h1 class="topbar-title" id="page-heading">Dashboard Overview</h1>
           <div class="topbar-sync-status" id="cloud-sync-status">
             <span class="status-pulsar"></span>
-            <span id="cloud-sync-text">Connecting...</span>
+            <span id="cloud-sync-text">Cloud Live: arudra-moblies</span>
           </div>
         </div>
 
         <div class="topbar-right">
+          <!-- Theme Switcher (Light / Dark) -->
+          <button class="btn-theme-toggle" id="btn-theme-toggle" title="Toggle Light / Dark theme" aria-label="Toggle Theme">
+            <span id="theme-toggle-icon">🌙</span>
+          </button>
           <div class="live-clock" id="live-clock">--:--:--</div>
-          <button class="btn-topbar-action" id="btn-refresh-data" title="Refresh data">
+          <button class="btn-topbar-action" id="btn-refresh-data" title="Refresh all data">
             <span>🔄</span> Refresh
           </button>
-          <button class="btn-topbar-action" id="btn-lock-admin" title="Lock session">
+          <button class="btn-topbar-action" id="btn-lock-admin" title="Lock admin session">
             <span>🔒</span> Lock
           </button>
         </div>
       </header>
 
-      <!-- Content Views -->
+      <!-- Content Area -->
       <div class="admin-content">
 
         <!-- ===================================================================
-             Tab 1: Overview (KPIs & Recent Orders)
+             Tab 1: Overview
              =================================================================== -->
         <section class="admin-tab-pane active" id="pane-overview">
-          <!-- KPI Stats Grid -->
-          <div class="stats-grid">
+          <!-- 6 KPI Stat Cards -->
+          <div class="stats-grid-6">
             <div class="stat-card card-revenue">
               <div class="stat-card-header">
                 <span class="stat-card-title">Total Revenue</span>
                 <span class="stat-card-icon">💵</span>
               </div>
               <div class="stat-card-value" id="kpi-revenue">₹0</div>
-              <div class="stat-card-sub">
-                <span class="trend-up">100% genuine</span> gross sales
-              </div>
+              <div class="stat-card-sub">Gross sales from orders</div>
             </div>
 
             <div class="stat-card card-orders">
@@ -139,35 +161,75 @@
                 <span class="stat-card-icon">📦</span>
               </div>
               <div class="stat-card-value" id="kpi-orders">0</div>
-              <div class="stat-card-sub">
-                Lifetime recorded orders
-              </div>
+              <div class="stat-card-sub">All-time recorded</div>
             </div>
 
-            <div class="stat-card card-active">
+            <div class="stat-card card-products">
               <div class="stat-card-header">
-                <span class="stat-card-title">Active / In-Transit</span>
-                <span class="stat-card-icon">🚚</span>
+                <span class="stat-card-title">Total Products</span>
+                <span class="stat-card-icon">📱</span>
               </div>
-              <div class="stat-card-value" id="kpi-active">0</div>
-              <div class="stat-card-sub">
-                Needs delivery or shipping
-              </div>
+              <div class="stat-card-value" id="kpi-products">0</div>
+              <div class="stat-card-sub">Active in store catalog</div>
             </div>
 
-            <div class="stat-card card-customers">
+            <div class="stat-card card-users">
               <div class="stat-card-header">
-                <span class="stat-card-title">Registered Customers</span>
+                <span class="stat-card-title">Total Users</span>
                 <span class="stat-card-icon">👥</span>
               </div>
-              <div class="stat-card-value" id="kpi-customers">0</div>
-              <div class="stat-card-sub">
-                Verified customer accounts
+              <div class="stat-card-value" id="kpi-users">0</div>
+              <div class="stat-card-sub">Registered customers</div>
+            </div>
+
+            <div class="stat-card card-pending">
+              <div class="stat-card-header">
+                <span class="stat-card-title">Pending Orders</span>
+                <span class="stat-card-icon">⏳</span>
+              </div>
+              <div class="stat-card-value" id="kpi-pending">0</div>
+              <div class="stat-card-sub">In-progress / shipping</div>
+            </div>
+
+            <div class="stat-card card-delivered">
+              <div class="stat-card-header">
+                <span class="stat-card-title">Delivered Orders</span>
+                <span class="stat-card-icon">✅</span>
+              </div>
+              <div class="stat-card-value" id="kpi-delivered">0</div>
+              <div class="stat-card-sub">Completed fulfillment</div>
+            </div>
+          </div>
+
+          <!-- Charts Grid (Responsive Canvas Charts) -->
+          <div class="charts-grid-2">
+            <div class="chart-card">
+              <div class="chart-header">
+                <div>
+                  <h3 class="chart-title">Revenue & Sales Trend</h3>
+                  <div class="chart-subtitle">Daily sales volume (₹) over the last 7 days</div>
+                </div>
+                <span class="status-badge status-confirmed">Live Sync</span>
+              </div>
+              <div class="chart-canvas-wrapper">
+                <canvas id="sales-chart-canvas" class="chart-canvas"></canvas>
+              </div>
+            </div>
+
+            <div class="chart-card">
+              <div class="chart-header">
+                <div>
+                  <h3 class="chart-title">Order Status Distribution</h3>
+                  <div class="chart-subtitle">Orders by fulfillment stage</div>
+                </div>
+              </div>
+              <div class="chart-canvas-wrapper">
+                <canvas id="orders-chart-canvas" class="chart-canvas"></canvas>
               </div>
             </div>
           </div>
 
-          <!-- Recent Orders Panel -->
+          <!-- Recent Orders Snapshot Table -->
           <div class="table-panel">
             <div class="table-panel-header">
               <div class="panel-title-group">
@@ -187,7 +249,7 @@
                     <th>Customer</th>
                     <th>Amount</th>
                     <th>Status</th>
-                    <th>Quick Action</th>
+                    <th>Change Status</th>
                   </tr>
                 </thead>
                 <tbody id="overview-recent-orders-tbody">
@@ -205,7 +267,7 @@
           <div class="table-panel">
             <div class="table-panel-header">
               <div class="panel-title-group">
-                <h3>All Orders & Shipments</h3>
+                <h3>Customer Orders Management</h3>
                 <p>Manage order status, inspect delivery addresses, and track fulfillment</p>
               </div>
 
@@ -213,11 +275,12 @@
               <div class="table-toolbar">
                 <div class="search-input-box">
                   <span class="search-icon-fixed">🔍</span>
-                  <input type="text" id="order-search-input" placeholder="Search order, name, phone...">
+                  <input type="text" id="order-search-input" placeholder="Search order #, customer, phone...">
                 </div>
 
                 <select id="order-status-filter" class="status-filter-select">
                   <option value="all">All Statuses</option>
+                  <option value="Pending">Pending</option>
                   <option value="Confirmed">Confirmed</option>
                   <option value="Processing">Processing</option>
                   <option value="Shipped">Shipped</option>
@@ -226,7 +289,7 @@
                   <option value="Cancelled">Cancelled</option>
                 </select>
 
-                <button class="btn-csv-export" id="btn-export-csv" title="Export current orders to CSV">
+                <button class="btn-topbar-action" id="btn-export-csv" title="Export orders to CSV">
                   <span>📥</span> Export CSV
                 </button>
               </div>
@@ -238,17 +301,18 @@
                   <tr>
                     <th>Order #</th>
                     <th>Date</th>
-                    <th>Customer</th>
-                    <th>Items Ordered</th>
-                    <th>Total</th>
+                    <th>Customer Name & Email</th>
+                    <th>Phone</th>
+                    <th>Products & Qty</th>
+                    <th>Order Amount</th>
                     <th>Payment</th>
                     <th>Status</th>
-                    <th>Change Status</th>
-                    <th>Actions</th>
+                    <th>Update Status</th>
+                    <th>Details</th>
                   </tr>
                 </thead>
                 <tbody id="orders-table-tbody">
-                  <tr><td colspan="9" class="table-empty-row">Loading orders...</td></tr>
+                  <tr><td colspan="10" class="table-empty-row">Loading orders...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -256,20 +320,61 @@
         </section>
 
         <!-- ===================================================================
-             Tab 3: Inventory & Catalog
+             Tab 3: User Management
+             =================================================================== -->
+        <section class="admin-tab-pane" id="pane-users">
+          <div class="table-panel">
+            <div class="table-panel-header">
+              <div class="panel-title-group">
+                <h3>Registered Customer Directory</h3>
+                <p>All customers authenticated via Firebase Google Sign-In or store checkout</p>
+              </div>
+              <div class="table-toolbar">
+                <div class="search-input-box">
+                  <span class="search-icon-fixed">🔍</span>
+                  <input type="text" id="user-search-input" placeholder="Search customer name or email...">
+                </div>
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="admin-table">
+                <thead>
+                  <tr>
+                    <th>Customer ID</th>
+                    <th>Customer Name</th>
+                    <th>Email Address</th>
+                    <th>Registration Date</th>
+                    <th>Total Orders</th>
+                    <th>Total Spent</th>
+                  </tr>
+                </thead>
+                <tbody id="users-table-tbody">
+                  <tr><td colspan="6" class="table-empty-row">Loading user records...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             Tab 4: Product Management (CRUD)
              =================================================================== -->
         <section class="admin-tab-pane" id="pane-products">
           <div class="table-panel">
             <div class="table-panel-header">
               <div class="panel-title-group">
-                <h3>Storefront Inventory Catalog</h3>
-                <p>Live smartphones currently listed in the store catalog</p>
+                <h3>Smartphone Inventory & Catalog</h3>
+                <p>Manage smartphone models, adjust prices, discounts, specs, and live inventory stock</p>
               </div>
               <div class="table-toolbar">
                 <div class="search-input-box">
                   <span class="search-icon-fixed">🔍</span>
-                  <input type="text" id="product-search-input" placeholder="Filter by phone name or brand...">
+                  <input type="text" id="product-search-input" placeholder="Filter by model or brand...">
                 </div>
+                <button class="btn-primary-action" id="btn-open-add-product">
+                  <span>➕</span> Add New Phone
+                </button>
               </div>
             </div>
 
@@ -279,15 +384,16 @@
                   <tr>
                     <th>Product</th>
                     <th>Brand</th>
-                    <th>RAM & Storage</th>
+                    <th>RAM / Storage</th>
                     <th>Price</th>
                     <th>MRP / Discount</th>
+                    <th>Stock</th>
                     <th>Rating</th>
-                    <th>Status</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody id="products-table-tbody">
-                  <!-- Dynamically injected from PRODUCTS_DATA -->
+                  <tr><td colspan="8" class="table-empty-row">Loading inventory...</td></tr>
                 </tbody>
               </table>
             </div>
@@ -295,52 +401,187 @@
         </section>
 
         <!-- ===================================================================
-             Tab 4: Customer Directory
+             Tab 5: Sales Analytics
              =================================================================== -->
-        <section class="admin-tab-pane" id="pane-customers">
-          <div class="table-panel">
-            <div class="table-panel-header">
-              <div class="panel-title-group">
-                <h3>Registered Customer Directory</h3>
-                <p>Customers registered via Google Sign-In or store checkout</p>
+        <section class="admin-tab-pane" id="pane-analytics">
+          <div class="stats-grid-6" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+            <div class="stat-card card-revenue">
+              <div class="stat-card-header">
+                <span class="stat-card-title">Today's Sales</span>
+                <span class="stat-card-icon">⚡</span>
+              </div>
+              <div class="stat-card-value" id="sales-today-val">₹0</div>
+              <div class="stat-card-sub" id="sales-today-orders">0 orders placed today</div>
+            </div>
+
+            <div class="stat-card card-orders">
+              <div class="stat-card-header">
+                <span class="stat-card-title">Weekly Sales (7 Days)</span>
+                <span class="stat-card-icon">📅</span>
+              </div>
+              <div class="stat-card-value" id="sales-week-val">₹0</div>
+              <div class="stat-card-sub" id="sales-week-orders">0 orders in last 7 days</div>
+            </div>
+
+            <div class="stat-card card-delivered">
+              <div class="stat-card-header">
+                <span class="stat-card-title">Monthly Sales (30 Days)</span>
+                <span class="stat-card-icon">📈</span>
+              </div>
+              <div class="stat-card-value" id="sales-month-val">₹0</div>
+              <div class="stat-card-sub" id="sales-month-orders">0 orders in last 30 days</div>
+            </div>
+
+            <div class="stat-card card-users">
+              <div class="stat-card-header">
+                <span class="stat-card-title">All-Time Revenue</span>
+                <span class="stat-card-icon">💎</span>
+              </div>
+              <div class="stat-card-value" id="sales-total-val">₹0</div>
+              <div class="stat-card-sub" id="sales-total-orders">Total lifetime revenue</div>
+            </div>
+          </div>
+
+          <div class="chart-card" style="margin-bottom: 2rem;">
+            <div class="chart-header">
+              <div>
+                <h3 class="chart-title">Revenue Trajectory & Daily Orders</h3>
+                <div class="chart-subtitle">Interactive sales visualization across recent business days</div>
+              </div>
+            </div>
+            <div class="chart-canvas-wrapper" style="height: 320px;">
+              <canvas id="sales-analytics-canvas" class="chart-canvas"></canvas>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             Tab 6: AI Chatbot Analytics
+             =================================================================== -->
+        <section class="admin-tab-pane" id="pane-chatbot">
+          <div class="chatbot-analytics-grid">
+            <div class="table-panel">
+              <div class="table-panel-header">
+                <div class="panel-title-group">
+                  <h3>Recent Customer Inquiries</h3>
+                  <p>Real-time stream of questions asked to NexBot Shopping Assistant</p>
+                </div>
+                <span class="status-badge status-confirmed" id="chat-total-badge">0 Questions Asked</span>
+              </div>
+              <div style="padding: 1.25rem;">
+                <div class="chat-query-list" id="chat-query-list">
+                  <div class="table-empty-row">No questions recorded yet. Customer questions asked in the storefront chat will appear here.</div>
+                </div>
               </div>
             </div>
 
-            <div class="table-responsive">
-              <table class="admin-table">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Email Address</th>
-                    <th>Joined Date</th>
-                    <th>Total Orders</th>
-                    <th>Total Spent</th>
-                  </tr>
-                </thead>
-                <tbody id="customers-table-tbody">
-                  <tr><td colspan="6" class="table-empty-row">Loading customer records...</td></tr>
-                </tbody>
-              </table>
+            <div class="alert-card-panel">
+              <div class="alert-card-header">
+                <span>🔥</span> Most Frequent Topics & Queries
+              </div>
+              <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">
+                Key smartphone specifications and buyer considerations searched by customers:
+              </p>
+              <div class="topic-chip-container" id="chat-topics-container">
+                <!-- Dynamically populated -->
+              </div>
+
+              <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--admin-border);">
+                <h4 style="font-size: 0.85rem; font-weight: 700; color: var(--text-main); margin-bottom: 0.5rem;">AI RAG Safety & Privacy</h4>
+                <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.5;">
+                  Customer queries are grounded strictly in the store's verified product catalog. API keys are safely held server-side.
+                </p>
+              </div>
             </div>
           </div>
         </section>
 
         <!-- ===================================================================
-             Tab 5: System & Cloud Health
+             Tab 7: Store Activity Timeline
+             =================================================================== -->
+        <section class="admin-tab-pane" id="pane-activity">
+          <div class="table-panel">
+            <div class="table-panel-header">
+              <div class="panel-title-group">
+                <h3>Real-Time Store Activity Log</h3>
+                <p>Chronological feed of orders placed, customer signups, product updates, and status changes</p>
+              </div>
+            </div>
+            <div style="padding: 1.5rem 2rem;">
+              <div class="activity-timeline" id="activity-timeline">
+                <div class="table-empty-row">No activity logged yet.</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             Tab 8: Low Stock Alerts
+             =================================================================== -->
+        <section class="admin-tab-pane" id="pane-stock-alerts">
+          <div class="alerts-grid">
+            <!-- Low Stock Panel -->
+            <div class="alert-card-panel">
+              <div class="alert-card-header">
+                <span style="color: var(--warning);">⚠️</span> Low Stock Inventory (5 or fewer left)
+              </div>
+              <div class="table-responsive">
+                <table class="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Phone</th>
+                      <th>Brand</th>
+                      <th>Price</th>
+                      <th>Stock Left</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="low-stock-tbody">
+                    <tr><td colspan="5" class="table-empty-row">All products well-stocked!</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Out of Stock Panel -->
+            <div class="alert-card-panel">
+              <div class="alert-card-header">
+                <span style="color: var(--danger);">🚨</span> Out of Stock (0 units remaining)
+              </div>
+              <div class="table-responsive">
+                <table class="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Phone</th>
+                      <th>Brand</th>
+                      <th>Price</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody id="out-of-stock-tbody">
+                    <tr><td colspan="4" class="table-empty-row">No out-of-stock items!</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================================
+             Tab 9: System & Cloud Health
              =================================================================== -->
         <section class="admin-tab-pane" id="pane-system">
           <div class="system-health-grid">
             <div class="health-card">
               <div class="health-card-title">
-                <span>🔥</span> Firebase Cloud Architecture
+                <span>🔥</span> Firebase Cloud Services
               </div>
               <div class="health-item">
                 <span class="health-label">Project ID</span>
                 <span class="health-val" id="sys-fb-project">arudra-moblies</span>
               </div>
               <div class="health-item">
-                <span class="health-label">Firebase Auth</span>
+                <span class="health-label">Authentication</span>
                 <span class="health-val" style="color: var(--success);">Google & Email Active ✅</span>
               </div>
               <div class="health-item">
@@ -348,14 +589,14 @@
                 <span class="health-val" style="color: var(--success);">Orders Collection Synced ✅</span>
               </div>
               <div class="health-item">
-                <span class="health-label">SDK Integration</span>
-                <span class="health-val">Modular v10 (CDN Zero-Dependency)</span>
+                <span class="health-label">SDK</span>
+                <span class="health-val">Modular v10 CDN</span>
               </div>
             </div>
 
             <div class="health-card">
               <div class="health-card-title">
-                <span>💾</span> Local SQLite Engine
+                <span>💾</span> SQLite Native Database
               </div>
               <div class="health-item">
                 <span class="health-label">Database File</span>
@@ -371,29 +612,25 @@
               </div>
               <div class="health-item">
                 <span class="health-label">Tables</span>
-                <span class="health-val">users, sessions, orders</span>
+                <span class="health-val">users, sessions, orders, products, queries, activity</span>
               </div>
             </div>
 
             <div class="health-card">
               <div class="health-card-title">
-                <span>🤖</span> AI RAG Shopping Assistant
+                <span>🤖</span> AI Assistant Engine
               </div>
               <div class="health-item">
-                <span class="health-label">LLM Provider</span>
-                <span class="health-val">OpenRouter / OpenAI</span>
-              </div>
-              <div class="health-item">
-                <span class="health-label">Model</span>
-                <span class="health-val">openai/gpt-4o-mini</span>
+                <span class="health-label">Primary LLM</span>
+                <span class="health-val">OpenRouter (gpt-4o-mini)</span>
               </div>
               <div class="health-item">
                 <span class="health-label">Local Fallback</span>
-                <span class="health-val" style="color: var(--success);">BM25 Grounded RAG Active ✅</span>
+                <span class="health-val" style="color: var(--success);">BM25 Grounded RAG ✅</span>
               </div>
               <div class="health-item">
-                <span class="health-label">Status</span>
-                <span class="health-val">Serving on /api/chat</span>
+                <span class="health-label">Analytics</span>
+                <span class="health-val" style="color: var(--success);">Query Logging Active ✅</span>
               </div>
             </div>
           </div>
@@ -406,20 +643,20 @@
   <!-- =========================================================================
        3. Order Details Modal
        ========================================================================= -->
-  <div class="order-detail-backdrop" id="order-detail-backdrop" role="dialog" aria-modal="true">
-    <div class="order-detail-modal" id="order-detail-modal">
-      <div class="order-detail-header">
+  <div class="admin-modal-backdrop" id="order-detail-backdrop" role="dialog" aria-modal="true">
+    <div class="admin-modal-box">
+      <div class="admin-modal-header">
         <div>
-          <h3 id="modal-order-number" style="font-size: 1.3rem; color: var(--primary);">NEX-000000</h3>
+          <h3 id="modal-order-number" style="font-size: 1.35rem; color: var(--primary);">NEX-000000</h3>
           <p id="modal-order-date" style="font-size: 0.82rem; color: var(--text-muted);">Placed on ...</p>
         </div>
-        <button class="order-detail-close" id="modal-order-close" aria-label="Close modal">✕</button>
+        <button class="admin-modal-close" id="modal-order-close" aria-label="Close modal">✕</button>
       </div>
 
       <div class="detail-section-title">Customer Information</div>
       <div class="detail-grid-2">
         <div class="detail-info-box">
-          <label>Full Name</label>
+          <label>Customer Name</label>
           <span id="modal-cust-name">-</span>
         </div>
         <div class="detail-info-box">
@@ -431,14 +668,14 @@
           <span id="modal-cust-email">-</span>
         </div>
         <div class="detail-info-box" style="grid-column: 1 / -1;">
-          <label>Delivery Address</label>
+          <label>Shipping Address</label>
           <span id="modal-cust-address">-</span>
         </div>
       </div>
 
-      <div class="detail-section-title">Items Ordered</div>
+      <div class="detail-section-title">Products Ordered</div>
       <div class="detail-items-list" id="modal-items-list">
-        <!-- Dynamically injected -->
+        <!-- Injected dynamically -->
       </div>
 
       <div class="detail-grid-2" style="margin-top: 1rem;">
@@ -447,15 +684,16 @@
           <span id="modal-payment-method">-</span>
         </div>
         <div class="detail-info-box">
-          <label>Total Amount</label>
-          <span id="modal-total-amount" style="color: var(--success); font-size: 1.1rem;">₹0</span>
+          <label>Order Amount</label>
+          <span id="modal-total-amount" style="color: var(--success); font-size: 1.15rem; font-weight: 800;">₹0</span>
         </div>
       </div>
 
       <div style="margin-top: 1.5rem; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--admin-border); padding-top: 1.25rem;">
         <div>
-          <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.35rem;">Update Order Status:</label>
+          <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 0.35rem;">Status Progression:</label>
           <select id="modal-status-select" class="status-changer-select" style="padding: 0.5rem 0.85rem; font-size: 0.9rem;">
+            <option value="Pending">Pending</option>
             <option value="Confirmed">Confirmed</option>
             <option value="Processing">Processing</option>
             <option value="Shipped">Shipped</option>
@@ -464,10 +702,96 @@
             <option value="Cancelled">Cancelled</option>
           </select>
         </div>
-        <button class="btn-topbar-action" id="modal-btn-save-status" style="background: var(--primary); color: #fff; border-color: var(--primary);">
+        <button class="btn-primary-action" id="modal-btn-save-status">
           Save Status
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       4. Product Add / Edit Modal
+       ========================================================================= -->
+  <div class="admin-modal-backdrop" id="product-modal-backdrop" role="dialog" aria-modal="true">
+    <div class="admin-modal-box">
+      <div class="admin-modal-header">
+        <div>
+          <h3 id="product-modal-title" style="font-size: 1.3rem; color: var(--text-main);">Add New Smartphone</h3>
+          <p style="font-size: 0.82rem; color: var(--text-muted);">Enter phone specifications and inventory stock</p>
+        </div>
+        <button class="admin-modal-close" id="product-modal-close" aria-label="Close modal">✕</button>
+      </div>
+
+      <form id="product-form">
+        <input type="hidden" id="product-form-id">
+
+        <div class="form-grid-2">
+          <div class="form-group-admin">
+            <label for="prod-model">Phone Model Name *</label>
+            <input type="text" id="prod-model" placeholder="e.g. OnePlus 12 5G" required>
+          </div>
+          <div class="form-group-admin">
+            <label for="prod-brand">Brand *</label>
+            <input type="text" id="prod-brand" placeholder="e.g. OnePlus" required>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group-admin">
+            <label for="prod-price">Selling Price (₹) *</label>
+            <input type="number" id="prod-price" placeholder="39999" required min="1">
+          </div>
+          <div class="form-group-admin">
+            <label for="prod-mrp">MRP (₹) *</label>
+            <input type="number" id="prod-mrp" placeholder="44999" required min="1">
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group-admin">
+            <label for="prod-discount">Discount Tag</label>
+            <input type="text" id="prod-discount" placeholder="e.g. 11% OFF">
+          </div>
+          <div class="form-group-admin">
+            <label for="prod-stock">Stock Quantity *</label>
+            <input type="number" id="prod-stock" placeholder="10" required min="0">
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group-admin">
+            <label for="prod-ram">RAM Specs</label>
+            <input type="text" id="prod-ram" placeholder="e.g. 8GB LPDDR5X">
+          </div>
+          <div class="form-group-admin">
+            <label for="prod-storage">Storage Specs</label>
+            <input type="text" id="prod-storage" placeholder="e.g. 128GB / 256GB UFS 4.0">
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group-admin">
+            <label for="prod-processor">Processor</label>
+            <input type="text" id="prod-processor" placeholder="e.g. Snapdragon 8 Gen 3">
+          </div>
+          <div class="form-group-admin">
+            <label for="prod-badge">Product Badge</label>
+            <input type="text" id="prod-badge" placeholder="e.g. Best Seller">
+          </div>
+        </div>
+
+        <div class="form-group-admin">
+          <label for="prod-image">Image URL / Path</label>
+          <input type="text" id="prod-image" placeholder="e.g. /images/oneplus-nord-ce4.jpg">
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; margin-top: 1.5rem; border-top: 1px solid var(--admin-border); padding-top: 1.25rem;">
+          <button type="button" class="btn-topbar-action" id="btn-cancel-product">Cancel</button>
+          <button type="submit" class="btn-primary-action" id="btn-save-product">
+            <span>💾</span> Save Smartphone
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 

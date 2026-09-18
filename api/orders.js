@@ -2,7 +2,7 @@
  * Orders API Endpoint for NexPhone Studio
  * Handles /api/orders (creating orders and retrieving user order history)
  */
-import { createOrder, getUserOrders, getOrderByNumber } from '../lib/db.js';
+import { createOrder, getUserOrders, getOrderByNumber, logActivity } from '../lib/db.js';
 import { authenticateRequest } from '../lib/auth.js';
 
 export default async function handler(req, res) {
@@ -97,6 +97,12 @@ export default async function handler(req, res) {
         totalAmount: calculatedTotal,
         paymentMethod: String(paymentMethod)
       });
+
+      logActivity(
+        'order_placed',
+        `New Order: ${orderNumber}`,
+        `${customerName} placed order for ₹${calculatedTotal.toLocaleString('en-IN')} (${sanitizedItems.length} items)`
+      );
 
       return res.status(201).json({
         message: 'Order placed successfully!',

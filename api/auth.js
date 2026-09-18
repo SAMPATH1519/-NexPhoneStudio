@@ -2,7 +2,7 @@
  * User Authentication API Endpoint
  * Handles /api/auth/signup, /api/auth/login, /api/auth/logout, and /api/auth/me
  */
-import { createUser, getUserByEmail } from '../lib/db.js';
+import { createUser, getUserByEmail, logActivity } from '../lib/db.js';
 import { hashPassword, verifyPassword, createSessionToken, logoutSession, extractToken, authenticateRequest } from '../lib/auth.js';
 
 export default async function handler(req, res) {
@@ -63,6 +63,8 @@ export default async function handler(req, res) {
 
       // Set cookie
       res.setHeader('Set-Cookie', `session_token=${token}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${7 * 24 * 60 * 60}`);
+
+      logActivity('user_registered', `New Customer: ${newUser.name}`, `Email: ${newUser.email}`);
 
       return res.status(201).json({
         message: 'Account created successfully!',

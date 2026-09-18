@@ -3,6 +3,7 @@
  * Integrates indexed catalog chunks with live LLM (OpenRouter) or local RAG engine.
  */
 import { rag } from '../lib/rag.js';
+import { logChatbotQuery } from '../lib/db.js';
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -45,6 +46,7 @@ export default async function handler(req, res) {
       try {
         const llmResult = await callOpenRouter(message, chunks, history, storeName, apiKey, model);
         if (llmResult && llmResult.text) {
+          logChatbotQuery(message, 'openrouter-rag', sources.length);
           return res.status(200).json({
             answer: llmResult.text,
             sources,
@@ -63,6 +65,7 @@ export default async function handler(req, res) {
           notice = '⚠️ AI model rate-limited. Showing local store RAG answer.';
         }
 
+        logChatbotQuery(message, 'local-rag', sources.length);
         return res.status(200).json({
           answer: localAnswer,
           sources,
@@ -73,6 +76,7 @@ export default async function handler(req, res) {
     }
 
     // 3. Built-in Local RAG Answer (Offline / Default mode)
+    logChatbotQuery(message, 'local-rag', sources.length);
     return res.status(200).json({
       answer: generateGroundedAnswer(message, chunks, storeName),
       sources,
