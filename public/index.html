@@ -44,14 +44,17 @@
       <form class="auth-form" id="gk-login-form">
         <div class="form-group" style="text-align: left;">
           <label for="gk-login-email">Email Address</label>
-          <input type="email" id="gk-login-email" class="form-input" placeholder="e.g. rahul@example.com" required autocomplete="email">
+          <input type="email" id="gk-login-email" class="form-input" placeholder="e.g. sai@example.com" value="sai@example.com" required autocomplete="email">
         </div>
         <div class="form-group" style="text-align: left;">
-          <label for="gk-login-password">Password</label>
-          <input type="password" id="gk-login-password" class="form-input" placeholder="••••••••" required autocomplete="current-password">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <label for="gk-login-password">Password</label>
+            <span style="font-size: 0.75rem; color: var(--accent); font-weight: 600;">(Demo: password123)</span>
+          </div>
+          <input type="password" id="gk-login-password" class="form-input" placeholder="••••••••" value="password123" required autocomplete="current-password">
         </div>
         <button type="submit" class="btn-primary btn-block" id="gk-btn-submit-login">
-          Sign In to Enter Store ➔
+          ⚡ Sign In to Enter Store ➔
         </button>
       </form>
 

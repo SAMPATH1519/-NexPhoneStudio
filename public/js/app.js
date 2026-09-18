@@ -558,18 +558,39 @@ document.addEventListener('DOMContentLoaded', () => {
     const chatWidgetWindow = document.getElementById('chat-widget-window');
 
     if (user) {
-      if (gatekeeperEl) gatekeeperEl.classList.add('hidden');
-      if (storefrontEl) storefrontEl.style.display = 'block';
-      if (chatLauncherBtn) chatLauncherBtn.style.display = 'flex';
+      if (gatekeeperEl) {
+        gatekeeperEl.classList.add('hidden');
+        gatekeeperEl.style.display = 'none';
+      }
+      if (storefrontEl) {
+        storefrontEl.style.display = 'block';
+      }
+      if (chatLauncherBtn) {
+        chatLauncherBtn.style.display = 'flex';
+      }
 
       if (navAuthLabel) navAuthLabel.textContent = user.name ? user.name.split(' ')[0] : 'User';
       if (dropdownUserName) dropdownUserName.textContent = user.name || 'Member';
       if (dropdownUserEmail) dropdownUserEmail.textContent = user.email || '';
+
+      // Smoothly scroll up to the unlocked store
+      try {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } catch (e) {}
     } else {
-      if (gatekeeperEl) gatekeeperEl.classList.remove('hidden');
-      if (storefrontEl) storefrontEl.style.display = 'none';
-      if (chatLauncherBtn) chatLauncherBtn.style.display = 'none';
-      if (chatWidgetWindow) chatWidgetWindow.classList.remove('open');
+      if (gatekeeperEl) {
+        gatekeeperEl.classList.remove('hidden');
+        gatekeeperEl.style.display = 'flex';
+      }
+      if (storefrontEl) {
+        storefrontEl.style.display = 'none';
+      }
+      if (chatLauncherBtn) {
+        chatLauncherBtn.style.display = 'none';
+      }
+      if (chatWidgetWindow) {
+        chatWidgetWindow.classList.remove('open');
+      }
 
       if (navAuthLabel) navAuthLabel.textContent = 'Sign In';
       if (userDropdownMenu) userDropdownMenu.classList.remove('show');
@@ -627,39 +648,57 @@ document.addEventListener('DOMContentLoaded', () => {
       const submitBtn = document.getElementById('gk-btn-submit-login');
       if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Verifying Credentials...';
+        submitBtn.textContent = 'Verifying & Entering...';
       }
 
       try {
-        if (fb.isFirebaseActive()) {
-          const user = await fb.loginWithEmail(email, password);
-          state.user = user;
-          state.token = `fb_${user.id}`;
-          localStorage.setItem('nex_token', state.token);
-          localStorage.setItem('nex_user', JSON.stringify(user));
-          updateAuthUI(state.user);
-          return;
+        let authenticated = false;
+
+        // 1. Primary: Verify against SQLite Database API
+        try {
+          const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+          });
+          const data = await res.json();
+          if (res.ok && data.token) {
+            state.token = data.token;
+            state.user = data.user;
+            localStorage.setItem('nex_token', data.token);
+            localStorage.setItem('nex_user', JSON.stringify(data.user));
+            authenticated = true;
+          }
+        } catch (serverErr) {
+          console.warn('SQLite login error:', serverErr);
         }
 
-        const res = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || 'Invalid email or password');
+        // 2. Secondary: Fallback to Firebase if not found in local DB
+        if (!authenticated && fb.isFirebaseActive()) {
+          try {
+            const user = await fb.loginWithEmail(email, password);
+            state.user = user;
+            state.token = `fb_${user.id}`;
+            localStorage.setItem('nex_token', state.token);
+            localStorage.setItem('nex_user', JSON.stringify(user));
+            authenticated = true;
+          } catch (fbErr) {
+            console.warn('Firebase login fallback error:', fbErr);
+          }
+        }
 
-        state.token = data.token;
-        state.user = data.user;
-        localStorage.setItem('nex_token', data.token);
-        localStorage.setItem('nex_user', JSON.stringify(data.user));
+        if (!authenticated) {
+          throw new Error('Invalid email or password. Please check credentials or create a new account.');
+        }
+
+        // Enter store immediately
         updateAuthUI(state.user);
       } catch (err) {
         showGatekeeperAlert(err.message, 'error');
       } finally {
         if (submitBtn) {
           submitBtn.disabled = false;
-          submitBtn.textContent = 'Sign In to Enter Store ➔';
+          submitBtn.textContent = '⚡ Sign In to Enter Store ➔';
         }
       }
     });
@@ -675,20 +714,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const submitBtn = document.getElementById('gk-btn-submit-signup');
       if (submitBtn) {
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Creating Account...';
+        submitBtn.textContent = 'Creating Account & Entering...';
       }
 
       try {
-        if (fb.isFirebaseActive()) {
-          const user = await fb.signUpWithEmail(name, email, password);
-          state.user = user;
-          state.token = `fb_${user.id}`;
-          localStorage.setItem('nex_token', state.token);
-          localStorage.setItem('nex_user', JSON.stringify(user));
-          updateAuthUI(state.user);
-          return;
-        }
-
+        // 1. Create Account in SQLite Database
         const res = await fetch('/api/auth/signup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -701,6 +731,13 @@ document.addEventListener('DOMContentLoaded', () => {
         state.user = data.user;
         localStorage.setItem('nex_token', data.token);
         localStorage.setItem('nex_user', JSON.stringify(data.user));
+
+        // 2. Sync to Firebase in background if active
+        if (fb.isFirebaseActive()) {
+          fb.signUpWithEmail(name, email, password).catch(e => console.warn('Firebase signup sync:', e));
+        }
+
+        // Enter store immediately
         updateAuthUI(state.user);
       } catch (err) {
         showGatekeeperAlert(err.message, 'error');
@@ -726,6 +763,8 @@ document.addEventListener('DOMContentLoaded', () => {
         state.token = `fb_${user.id}`;
         localStorage.setItem('nex_token', state.token);
         localStorage.setItem('nex_user', JSON.stringify(user));
+
+        // Enter store immediately
         updateAuthUI(state.user);
       } catch (err) {
         showGatekeeperAlert(err.message || 'Google Sign-In failed', 'error');
@@ -830,28 +869,45 @@ document.addEventListener('DOMContentLoaded', () => {
       const password = document.getElementById('login-password')?.value;
 
       try {
-        if (fb.isFirebaseActive()) {
-          const user = await fb.loginWithEmail(email, password);
-          state.user = user;
-          state.token = `fb_${user.id}`;
-          localStorage.setItem('nex_token', state.token);
-          localStorage.setItem('nex_user', JSON.stringify(user));
-          updateAuthUI(state.user);
-          closeAuthModal();
-          return;
+        let authenticated = false;
+
+        // 1. Primary: Verify against SQLite Database API
+        try {
+          const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+          });
+          const data = await res.json();
+          if (res.ok && data.token) {
+            state.token = data.token;
+            state.user = data.user;
+            localStorage.setItem('nex_token', data.token);
+            localStorage.setItem('nex_user', JSON.stringify(data.user));
+            authenticated = true;
+          }
+        } catch (serverErr) {
+          console.warn('SQLite login error:', serverErr);
         }
 
-        const res = await fetch('/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || 'Login failed');
+        // 2. Secondary: Fallback to Firebase
+        if (!authenticated && fb.isFirebaseActive()) {
+          try {
+            const user = await fb.loginWithEmail(email, password);
+            state.user = user;
+            state.token = `fb_${user.id}`;
+            localStorage.setItem('nex_token', state.token);
+            localStorage.setItem('nex_user', JSON.stringify(user));
+            authenticated = true;
+          } catch (fbErr) {
+            console.warn('Firebase login fallback error:', fbErr);
+          }
+        }
 
-        state.token = data.token;
-        state.user = data.user;
-        localStorage.setItem('nex_token', data.token);
+        if (!authenticated) {
+          throw new Error('Invalid email or password.');
+        }
+
         updateAuthUI(state.user);
         closeAuthModal();
       } catch (err) {
@@ -870,17 +926,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const password = document.getElementById('signup-password')?.value;
 
       try {
-        if (fb.isFirebaseActive()) {
-          const user = await fb.signUpWithEmail(name, email, password);
-          state.user = user;
-          state.token = `fb_${user.id}`;
-          localStorage.setItem('nex_token', state.token);
-          localStorage.setItem('nex_user', JSON.stringify(user));
-          updateAuthUI(state.user);
-          closeAuthModal();
-          return;
-        }
-
         const res = await fetch('/api/auth/signup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -892,6 +937,12 @@ document.addEventListener('DOMContentLoaded', () => {
         state.token = data.token;
         state.user = data.user;
         localStorage.setItem('nex_token', data.token);
+        localStorage.setItem('nex_user', JSON.stringify(data.user));
+
+        if (fb.isFirebaseActive()) {
+          fb.signUpWithEmail(name, email, password).catch(e => console.warn('Firebase signup sync:', e));
+        }
+
         updateAuthUI(state.user);
         closeAuthModal();
       } catch (err) {
