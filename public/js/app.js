@@ -552,14 +552,185 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function updateAuthUI(user) {
+    const gatekeeperEl = document.getElementById('customer-gatekeeper');
+    const storefrontEl = document.getElementById('storefront-app');
+    const chatLauncherBtn = document.getElementById('chat-launcher-btn');
+    const chatWidgetWindow = document.getElementById('chat-widget-window');
+
     if (user) {
-      if (navAuthLabel) navAuthLabel.textContent = user.name.split(' ')[0];
-      if (dropdownUserName) dropdownUserName.textContent = user.name;
-      if (dropdownUserEmail) dropdownUserEmail.textContent = user.email;
+      if (gatekeeperEl) gatekeeperEl.classList.add('hidden');
+      if (storefrontEl) storefrontEl.style.display = 'block';
+      if (chatLauncherBtn) chatLauncherBtn.style.display = 'flex';
+
+      if (navAuthLabel) navAuthLabel.textContent = user.name ? user.name.split(' ')[0] : 'User';
+      if (dropdownUserName) dropdownUserName.textContent = user.name || 'Member';
+      if (dropdownUserEmail) dropdownUserEmail.textContent = user.email || '';
     } else {
+      if (gatekeeperEl) gatekeeperEl.classList.remove('hidden');
+      if (storefrontEl) storefrontEl.style.display = 'none';
+      if (chatLauncherBtn) chatLauncherBtn.style.display = 'none';
+      if (chatWidgetWindow) chatWidgetWindow.classList.remove('open');
+
       if (navAuthLabel) navAuthLabel.textContent = 'Sign In';
       if (userDropdownMenu) userDropdownMenu.classList.remove('show');
     }
+  }
+
+  // =========================================================================
+  // Customer Gatekeeper (Login Wall) Controller
+  // =========================================================================
+  const gkTabLogin = document.getElementById('gk-tab-login');
+  const gkTabSignup = document.getElementById('gk-tab-signup');
+  const gkLoginForm = document.getElementById('gk-login-form');
+  const gkSignupForm = document.getElementById('gk-signup-form');
+  const gkAuthAlert = document.getElementById('gk-auth-alert');
+  const gkBtnGoogle = document.getElementById('gk-btn-google-auth');
+
+  function showGatekeeperAlert(msg, type = 'error') {
+    if (!gkAuthAlert) return;
+    gkAuthAlert.textContent = msg;
+    gkAuthAlert.className = `auth-alert ${type}`;
+    gkAuthAlert.style.display = 'block';
+  }
+
+  function clearGatekeeperAlert() {
+    if (gkAuthAlert) {
+      gkAuthAlert.style.display = 'none';
+      gkAuthAlert.textContent = '';
+    }
+  }
+
+  function switchGatekeeperTab(tab) {
+    clearGatekeeperAlert();
+    if (tab === 'login') {
+      gkTabLogin?.classList.add('active');
+      gkTabSignup?.classList.remove('active');
+      if (gkLoginForm) gkLoginForm.style.display = 'block';
+      if (gkSignupForm) gkSignupForm.style.display = 'none';
+    } else {
+      gkTabSignup?.classList.add('active');
+      gkTabLogin?.classList.remove('active');
+      if (gkSignupForm) gkSignupForm.style.display = 'block';
+      if (gkLoginForm) gkLoginForm.style.display = 'none';
+    }
+  }
+
+  if (gkTabLogin) gkTabLogin.addEventListener('click', () => switchGatekeeperTab('login'));
+  if (gkTabSignup) gkTabSignup.addEventListener('click', () => switchGatekeeperTab('signup'));
+
+  if (gkLoginForm) {
+    gkLoginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearGatekeeperAlert();
+      const email = document.getElementById('gk-login-email')?.value.trim();
+      const password = document.getElementById('gk-login-password')?.value;
+      const submitBtn = document.getElementById('gk-btn-submit-login');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Verifying Credentials...';
+      }
+
+      try {
+        if (fb.isFirebaseActive()) {
+          const user = await fb.loginWithEmail(email, password);
+          state.user = user;
+          state.token = `fb_${user.id}`;
+          localStorage.setItem('nex_token', state.token);
+          localStorage.setItem('nex_user', JSON.stringify(user));
+          updateAuthUI(state.user);
+          return;
+        }
+
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Invalid email or password');
+
+        state.token = data.token;
+        state.user = data.user;
+        localStorage.setItem('nex_token', data.token);
+        localStorage.setItem('nex_user', JSON.stringify(data.user));
+        updateAuthUI(state.user);
+      } catch (err) {
+        showGatekeeperAlert(err.message, 'error');
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Sign In to Enter Store ➔';
+        }
+      }
+    });
+  }
+
+  if (gkSignupForm) {
+    gkSignupForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearGatekeeperAlert();
+      const name = document.getElementById('gk-signup-name')?.value.trim();
+      const email = document.getElementById('gk-signup-email')?.value.trim();
+      const password = document.getElementById('gk-signup-password')?.value;
+      const submitBtn = document.getElementById('gk-btn-submit-signup');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Creating Account...';
+      }
+
+      try {
+        if (fb.isFirebaseActive()) {
+          const user = await fb.signUpWithEmail(name, email, password);
+          state.user = user;
+          state.token = `fb_${user.id}`;
+          localStorage.setItem('nex_token', state.token);
+          localStorage.setItem('nex_user', JSON.stringify(user));
+          updateAuthUI(state.user);
+          return;
+        }
+
+        const res = await fetch('/api/auth/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Account registration failed');
+
+        state.token = data.token;
+        state.user = data.user;
+        localStorage.setItem('nex_token', data.token);
+        localStorage.setItem('nex_user', JSON.stringify(data.user));
+        updateAuthUI(state.user);
+      } catch (err) {
+        showGatekeeperAlert(err.message, 'error');
+      } finally {
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Create Account & Enter Store ➔';
+        }
+      }
+    });
+  }
+
+  if (gkBtnGoogle) {
+    gkBtnGoogle.addEventListener('click', async () => {
+      try {
+        clearGatekeeperAlert();
+        if (!fb.isFirebaseActive()) {
+          showGatekeeperAlert('Firebase keys not configured yet. Sign in with Email & Password or add Firebase credentials.', 'error');
+          return;
+        }
+        const user = await fb.signInWithGoogle();
+        state.user = user;
+        state.token = `fb_${user.id}`;
+        localStorage.setItem('nex_token', state.token);
+        localStorage.setItem('nex_user', JSON.stringify(user));
+        updateAuthUI(state.user);
+      } catch (err) {
+        showGatekeeperAlert(err.message || 'Google Sign-In failed', 'error');
+      }
+    });
   }
 
   if (navAuthBtn) {
