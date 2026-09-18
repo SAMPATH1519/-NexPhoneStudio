@@ -276,7 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Trigger canvas resize when switching to charts
     if (tabId === 'overview' || tabId === 'analytics') {
-      setTimeout(renderSalesCharts, 50);
+      setTimeout(renderSalesCharts, 100);
     }
   }
 
@@ -551,7 +551,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function renderUsersTable(users) {
     if (!usersTableTbody) return;
     if (users.length === 0) {
-      usersTableTbody.innerHTML = `<tr><td colspan="6" class="table-empty-row">No registered users found.</td></tr>`;
+      usersTableTbody.innerHTML = `<tr><td colspan="7" class="table-empty-row">No registered users found.</td></tr>`;
       return;
     }
 
@@ -567,6 +567,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <td><strong>${u.name}</strong></td>
         <td>${u.email}</td>
         <td>${formatDate(u.created_at)}</td>
+        <td><small style="color: var(--text-muted);">${u.last_login_at ? formatDate(u.last_login_at) : 'Active User'}</small></td>
         <td style="font-weight: 600;">${u.order_count || 0}</td>
         <td class="amount-cell">${formatINR(u.total_spent)}</td>
       </tr>
@@ -609,7 +610,7 @@ document.addEventListener('DOMContentLoaded', () => {
     productsTableTbody.innerHTML = filtered.map(p => `
       <tr>
         <td style="display: flex; align-items: center; gap: 0.75rem;">
-          <img src="${p.image || '/images/oneplus-nord-ce4.jpg'}" alt="${p.model}" style="width: 42px; height: 46px; object-fit: contain; background: rgba(0,0,0,0.1); padding: 2px; border-radius: 4px; border: 1px solid var(--admin-border);">
+          <img src="${p.image || '/images/oneplus-nord-ce4.jpg'}" alt="${p.model}" onerror="this.onerror=null;this.src='/images/oneplus-nord-ce4.jpg';" style="width: 42px; height: 46px; object-fit: contain; background: rgba(0,0,0,0.1); padding: 2px; border-radius: 4px; border: 1px solid var(--admin-border);">
           <div>
             <strong>${p.model}</strong>
             <div style="font-size: 0.72rem; color: var(--text-muted);">${p.badge || ''}</div>
@@ -748,7 +749,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function deleteProductAction(id) {
     try {
-      const res = await adminFetch('/api/admin/products', {
+      const res = await adminFetch(`/api/admin/products?id=${encodeURIComponent(id)}`, {
         method: 'DELETE',
         body: JSON.stringify({ id })
       });
@@ -797,9 +798,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function renderSalesCharts() {
     if (!salesAnalyticsData) return;
-    drawSalesTrendChart('sales-chart-canvas', salesAnalyticsData.dailyTrend || []);
-    drawOrderStatusChart('orders-chart-canvas', salesAnalyticsData.statusDistribution || {});
-    drawSalesTrendChart('sales-analytics-canvas', salesAnalyticsData.dailyTrend || []);
+    try {
+      drawSalesTrendChart('sales-chart-canvas', salesAnalyticsData.dailyTrend || []);
+      drawOrderStatusChart('orders-chart-canvas', salesAnalyticsData.statusDistribution || {});
+      drawSalesTrendChart('sales-analytics-canvas', salesAnalyticsData.dailyTrend || []);
+    } catch (err) {
+      console.warn('renderSalesCharts error:', err);
+    }
   }
 
   // Pure Vanilla Canvas Smooth Line Chart
@@ -808,13 +813,19 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!canvas) return;
 
     const parent = canvas.parentElement;
-    canvas.width = parent.clientWidth * window.devicePixelRatio || 600;
-    canvas.height = parent.clientHeight * window.devicePixelRatio || 240;
+    if (!parent) return;
 
-    const ctx = canvas.getContext('2d');
-    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
     const width = parent.clientWidth;
     const height = parent.clientHeight;
+    // Guard against hidden tab / zero dimensions
+    if (width < 60 || height < 40) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
 
     ctx.clearRect(0, 0, width, height);
 
@@ -923,13 +934,19 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!canvas) return;
 
     const parent = canvas.parentElement;
-    canvas.width = parent.clientWidth * window.devicePixelRatio || 300;
-    canvas.height = parent.clientHeight * window.devicePixelRatio || 240;
+    if (!parent) return;
 
-    const ctx = canvas.getContext('2d');
-    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
     const width = parent.clientWidth;
     const height = parent.clientHeight;
+    // Guard against hidden tab / zero dimensions
+    if (width < 60 || height < 40) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = Math.round(width * dpr);
+    canvas.height = Math.round(height * dpr);
+
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
 
     ctx.clearRect(0, 0, width, height);
 
@@ -939,25 +956,34 @@ document.addEventListener('DOMContentLoaded', () => {
     const categories = [
       { name: 'Pending', count: dist['Pending'] || 0, color: '#f59e0b' },
       { name: 'Confirmed', count: dist['Confirmed'] || 0, color: '#3b82f6' },
+      { name: 'Processing', count: dist['Processing'] || 0, color: '#3b82f6' },
       { name: 'Shipped', count: dist['Shipped'] || 0, color: '#8b5cf6' },
       { name: 'Delivered', count: dist['Delivered'] || 0, color: '#10b981' }
     ];
 
     const maxCount = Math.max(...categories.map(c => c.count), 3) * 1.25;
-    const barWidth = 36;
-    const gap = (width - barWidth * categories.length) / (categories.length + 1);
+    const barWidth = 32;
+    const gap = Math.max(10, (width - barWidth * categories.length) / (categories.length + 1));
 
     ctx.font = '11px -apple-system, sans-serif';
 
     categories.forEach((cat, i) => {
       const x = gap + i * (barWidth + gap);
-      const barH = (cat.count / maxCount) * (height - 70);
+      const barH = Math.max(4, Math.round((cat.count / maxCount) * (height - 70)));
       const y = height - 40 - barH;
 
-      // Draw bar
+      // Draw bar with safe roundRect or fallback to rect
       ctx.fillStyle = cat.color;
       ctx.beginPath();
-      ctx.roundRect(x, y, barWidth, barH, [6, 6, 0, 0]);
+      if (typeof ctx.roundRect === 'function') {
+        try {
+          ctx.roundRect(x, y, barWidth, barH, [6, 6, 0, 0]);
+        } catch (e) {
+          ctx.rect(x, y, barWidth, barH);
+        }
+      } else {
+        ctx.rect(x, y, barWidth, barH);
+      }
       ctx.fill();
 
       // Label and value
