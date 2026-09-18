@@ -1,0 +1,43 @@
+{
+  "store_name": "NexPhone Studio",
+  "tagline": "Your Authorized Premium Mobile Destination",
+  "contact": {
+    "phone": "+91 98765 43210",
+    "email": "support@nexphonestudio.com",
+    "address": "NexPhone Studio Flagship, 42 Tech Avenue, Electronic City, Bengaluru, Karnataka 560100",
+    "hours": "Monday to Sunday: 10:00 AM – 9:30 PM"
+  },
+  "current_promotions": [
+    {
+      "title": "HDFC & ICICI Bank Instant Discount",
+      "details": "Flat ₹2,500 Instant Discount on Credit Card & EMI transactions above ₹20,000. Valid across all OnePlus, Samsung, and Xiaomi models.",
+      "valid_until": "End of current month"
+    },
+    {
+      "title": "No-Cost EMI Options",
+      "details": "0% Interest No-Cost EMI available for 3, 6, 9, and 12 months with Bajaj Finserv, HDFC Bank, SBI Card, and OneCard.",
+      "processing_fee": "Zero processing fee on all phones above ₹15,000."
+    },
+    {
+      "title": "Old Phone Trade-In / Exchange Bonus",
+      "details": "Up to ₹6,000 extra exchange bonus over your old device's evaluated value when upgrading to any 5G phone priced above ₹25,000.",
+      "requirements": "Old phone must power on; screen damage is accepted with standard deductions."
+    },
+    {
+      "title": "Free 1-Year Screen Damage Protection",
+      "details": "Complimentary 1-time accidental screen replacement protection package worth ₹2,999 on all Samsung Galaxy A-series, S24 Ultra, and Vivo V30 Pro.",
+      "activation": "Automatically activated within 48 hours of invoice date."
+    },
+    {
+      "title": "Student Discount",
+      "details": "Flat ₹1,000 extra discount on presenting a valid College/University Student ID at checkout.",
+      "eligibility": "Valid on all phones priced above ₹15,000."
+    }
+  ],
+  "warranty_and_returns": {
+    "brand_warranty": "All devices sold at NexPhone Studio are 100% genuine Indian retail units backed by official manufacturer brand warranties (1 Year for Phone, 6 Months for in-box accessories like charger & cable).",
+    "replacement_policy": "7-Day Replacement Guarantee: If your phone exhibits any manufacturing hardware defect within 7 days of purchase, NexPhone Studio will provide an immediate brand-new replacement unit with no restocking fee.",
+    "return_policy": "Returns are accepted within 7 days in case of verified hardware defects or incorrect product delivery. The device must be in original physical condition with the original box, IMEI stickers, and all bundled accessories.",
+    "service_centers": "Complimentary assistance at any authorized service center nationwide. Customers can also bring devices to our store for free warranty claim handling."
+  }
+}

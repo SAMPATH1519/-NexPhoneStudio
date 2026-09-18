@@ -1,0 +1,22 @@
+{
+  "name": "mobile-shop-rag-chatbot",
+  "version": "1.0.0",
+  "description": "AI-Powered RAG Chatbot & Modern Storefront for Mobile Phone Shop",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test:rag": "node test/test-rag.js"
+  },
+  "keywords": [
+    "rag",
+    "chatbot",
+    "mobile-shop",
+    "bm25",
+    "vector-search",
+    "vercel"
+  ],
+  "author": "",
+  "license": "MIT"
+}

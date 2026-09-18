@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NexPhone Studio | AI-Powered Premium Mobile Destination</title>
+  <meta name="description" content="Discover the latest smartphones from Apple, Samsung, OnePlus, Xiaomi, and Google with instant AI-powered advice and comparison backed by RAG.">
+  
+  <!-- Modern Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/chat.css">
+</head>
+<body>
+
+  <!-- =========================================================================
+       Navigation Bar
+       ========================================================================= -->
+  <header class="navbar" id="navbar">
+    <div class="container nav-container">
+      <a href="#home" class="brand-logo" id="brand-logo-link">
+        <div class="brand-icon">⚡</div>
+        <div class="brand-name">NexPhone<span>Studio</span></div>
+      </a>
+
+      <nav>
+        <ul class="nav-links" id="main-nav-links">
+          <li><a href="#home" class="nav-item active">Home</a></li>
+          <li><a href="#mobiles" class="nav-item">Mobiles</a></li>
+          <li><a href="#offers" class="nav-item">Offers</a></li>
+          <li><a href="#about" class="nav-item">About</a></li>
+        </ul>
+      </nav>
+
+      <div class="nav-actions">
+        <!-- Theme Toggle -->
+        <button class="theme-toggle-btn" id="theme-toggle-btn" aria-label="Toggle Color Theme" title="Toggle Light / Dark Mode">
+          <span class="theme-icon">🌙</span>
+          <span class="theme-label">Dark</span>
+        </button>
+
+        <!-- Cart Trigger Button -->
+        <button class="nav-cart-btn" id="nav-cart-btn" aria-label="Open Cart" title="Shopping Cart">
+          <span class="nav-cart-icon">🛒</span>
+          <span class="nav-cart-label">Cart</span>
+          <span class="nav-cart-badge" id="cart-count-badge">0</span>
+        </button>
+
+        <!-- User Authentication Button / Dropdown -->
+        <div class="user-nav-wrapper" id="user-nav-wrapper">
+          <button class="nav-auth-btn" id="nav-auth-btn" title="Sign In or Register">
+            <span class="auth-icon">👤</span>
+            <span class="auth-label" id="nav-auth-label">Sign In</span>
+          </button>
+          
+          <div class="user-dropdown-menu" id="user-dropdown-menu">
+            <div class="user-dropdown-header">
+              <span class="user-greeting">Signed in as</span>
+              <strong class="user-dropdown-name" id="dropdown-user-name">User</strong>
+              <small class="user-dropdown-email" id="dropdown-user-email">user@example.com</small>
+            </div>
+            <div class="user-dropdown-divider"></div>
+            <button class="user-dropdown-item" id="dropdown-my-orders-btn">
+              <span>📦</span> My Orders
+            </button>
+            <button class="user-dropdown-item text-danger" id="dropdown-logout-btn">
+              <span>🚪</span> Sign Out
+            </button>
+          </div>
+        </div>
+
+        <!-- AI Assistant Button -->
+        <button class="btn-ai-nav" data-open-chat id="nav-ai-assistant-btn" title="Chat with AI Mobile Specialist">
+          <span class="ai-pulse-dot"></span>
+          <span>AI Assistant</span>
+        </button>
+        <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Toggle Navigation Menu">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- =========================================================================
+       Hero Section
+       ========================================================================= -->
+  <section class="hero" id="home">
+    <div class="container hero-content">
+      <div class="hero-pill">
+        <span>🤖</span> Grounded with RAG Technology
+      </div>
+      <h1 class="hero-title">
+        Next-Gen Mobile Shopping
+      </h1>
+      <p class="hero-subtitle">
+        Explore curated 5G flagships, budget champions, and camera phones. Ask our ChatGPT-style AI Specialist anything about specifications, direct comparisons, or store offers.
+      </p>
+
+      <div class="hero-cta-group">
+        <button class="btn-primary" data-open-chat id="hero-ask-ai-cta">
+          <span>✨</span> Ask AI Assistant
+        </button>
+        <a href="#mobiles" class="btn-secondary" id="hero-browse-cta">
+          <span>📱</span> Browse Mobiles
+        </a>
+      </div>
+
+      <!-- Quick Trust Metrics -->
+      <div class="hero-stats">
+        <div class="stat-item">
+          <span class="stat-num">100%</span>
+          <span class="stat-label">Genuine Indian Stock</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num">7 Days</span>
+          <span class="stat-label">Replacement Guarantee</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num">0% EMI</span>
+          <span class="stat-label">No-Cost Financing</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-num">Instant</span>
+          <span class="stat-label">RAG AI Advisor</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       Mobiles Showcase & Filter Section
+       ========================================================================= -->
+  <section class="container" id="mobiles" style="padding-top: 3rem;">
+    <div class="section-header">
+      <span class="section-tag">Curated Catalog</span>
+      <h2 class="section-title">Explore Smartphones</h2>
+      <p class="section-desc">Filter by brand, price, or RAM size to find the ideal device for your lifestyle and budget.</p>
+    </div>
+
+    <!-- Filter & Search Controls Bar -->
+    <div class="catalog-controls" id="catalog-controls">
+      <!-- Search Bar -->
+      <div class="search-bar-row">
+        <div class="search-input-wrapper">
+          <span class="search-icon">🔍</span>
+          <input 
+            type="text" 
+            id="search-input" 
+            class="search-input" 
+            placeholder="Search phones by model (e.g., OnePlus Nord, Galaxy A55, 200MP, Snapdragon)..." 
+            autocomplete="off"
+          >
+        </div>
+      </div>
+
+      <!-- Brand Filter Chips -->
+      <div class="filter-row">
+        <span class="filter-label">Brand:</span>
+        <div class="filter-chip-group" id="brand-filter-group">
+          <button class="filter-chip active" data-brand-filter="all">All Brands</button>
+          <button class="filter-chip" data-brand-filter="OnePlus">OnePlus</button>
+          <button class="filter-chip" data-brand-filter="Xiaomi">Xiaomi / Redmi</button>
+          <button class="filter-chip" data-brand-filter="Samsung">Samsung</button>
+          <button class="filter-chip" data-brand-filter="Google">Google Pixel</button>
+          <button class="filter-chip" data-brand-filter="Realme">Realme</button>
+          <button class="filter-chip" data-brand-filter="Vivo">Vivo</button>
+          <button class="filter-chip" data-brand-filter="iQOO">iQOO</button>
+          <button class="filter-chip" data-brand-filter="Motorola">Motorola</button>
+          <button class="filter-chip" data-brand-filter="Nothing">Nothing</button>
+          <button class="filter-chip" data-brand-filter="Apple">Apple</button>
+        </div>
+      </div>
+
+      <div class="filter-divider"></div>
+
+      <!-- Price & RAM Filter Chips -->
+      <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
+        <!-- Price Range -->
+        <div class="filter-row" style="flex: 1; min-width: 280px;">
+          <span class="filter-label">Price:</span>
+          <div class="filter-chip-group" id="price-filter-group">
+            <button class="filter-chip active" data-price-filter="all">Any Price</button>
+            <button class="filter-chip" data-price-filter="under-20k">Under ₹20,000</button>
+            <button class="filter-chip" data-price-filter="20k-25k">₹20k – ₹25k</button>
+            <button class="filter-chip" data-price-filter="25k-50k">₹25k – ₹50k</button>
+            <button class="filter-chip" data-price-filter="above-50k">Flagships (₹50k+)</button>
+          </div>
+        </div>
+
+        <!-- RAM -->
+        <div class="filter-row">
+          <span class="filter-label">RAM:</span>
+          <div class="filter-chip-group" id="ram-filter-group">
+            <button class="filter-chip active" data-ram-filter="all">All RAM</button>
+            <button class="filter-chip" data-ram-filter="6">6GB</button>
+            <button class="filter-chip" data-ram-filter="8">8GB</button>
+            <button class="filter-chip" data-ram-filter="12">12GB</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results Summary -->
+    <div class="results-summary">
+      <div id="results-count" class="results-count">Showing 12 phones</div>
+      <div style="font-size: 0.825rem; color: var(--text-muted);">Prices updated in INR (₹)</div>
+    </div>
+
+    <!-- Product Cards Grid -->
+    <div class="product-grid" id="product-grid">
+      <!-- Populated dynamically by app.js -->
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       Store Offers & Promotions Section
+       ========================================================================= -->
+  <section class="offers-section" id="offers">
+    <div class="container">
+      <div class="section-header" style="text-align: center;">
+        <span class="section-tag">Exclusive Store Perks</span>
+        <h2 class="section-title">Current Offers & Financing</h2>
+        <p class="section-desc">Save more with our partner bank discounts, 0% EMI schemes, and guaranteed exchange bonuses.</p>
+      </div>
+
+      <div class="offers-grid">
+        <div class="offer-card">
+          <div class="offer-icon">💳</div>
+          <h3 class="offer-title">Flat ₹2,500 Bank Cashback</h3>
+          <p class="offer-desc">Instant discount on HDFC and ICICI Bank credit cards & EMI on all purchases above ₹20,000.</p>
+        </div>
+
+        <div class="offer-card">
+          <div class="offer-icon">📅</div>
+          <h3 class="offer-title">0% No-Cost EMI</h3>
+          <p class="offer-desc">Up to 12 months interest-free installment plans with Bajaj Finserv, SBI Card, HDFC, and OneCard.</p>
+        </div>
+
+        <div class="offer-card">
+          <div class="offer-icon">🔄</div>
+          <h3 class="offer-title">₹6,000 Exchange Bonus</h3>
+          <p class="offer-desc">Trade in any old working smartphone and receive up to ₹6,000 extra trade-in bonus over valuation.</p>
+        </div>
+
+        <div class="offer-card">
+          <div class="offer-icon">🛡️</div>
+          <h3 class="offer-title">1-Year Screen Protection</h3>
+          <p class="offer-desc">Free 1-time accidental screen replacement protection on all Samsung Galaxy A-series, S24, and Vivo V30 Pro.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       About Store & Trust Section
+       ========================================================================= -->
+  <section class="about-section container" id="about">
+    <div class="about-card">
+      <div class="about-grid">
+        <div class="about-text">
+          <span class="section-tag">Authorized Retailer</span>
+          <h3>Why Buy From NexPhone Studio?</h3>
+          <p>
+            Established in 2021, NexPhone Studio is a certified flagship retailer for Apple, Samsung, OnePlus, Xiaomi, and Google. We bridge the gap between physical boutique service and cutting-edge digital AI consultation.
+          </p>
+          <div class="about-badges">
+            <span class="about-badge-item">✓ 100% Genuine Seals</span>
+            <span class="about-badge-item">✓ 7-Day Replacement</span>
+            <span class="about-badge-item">✓ Official GST Invoices</span>
+            <span class="about-badge-item">✓ Authorized Service Tie-ups</span>
+          </div>
+        </div>
+
+        <div class="about-info-panel">
+          <div class="info-item">
+            <span class="info-icon">📍</span>
+            <div>
+              <div class="info-title">Flagship Experience Store</div>
+              <div class="info-detail">42 Tech Avenue, Electronic City, Bengaluru, Karnataka 560100</div>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <span class="info-icon">🕒</span>
+            <div>
+              <div class="info-title">Store Hours</div>
+              <div class="info-detail">Open 7 Days a week: 10:00 AM – 9:30 PM IST</div>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <span class="info-icon">📞</span>
+            <div>
+              <div class="info-title">Customer Helpline</div>
+              <div class="info-detail">+91 98765 43210 / support@nexphonestudio.com</div>
+            </div>
+          </div>
+
+          <div class="info-item">
+            <span class="info-icon">🤖</span>
+            <div>
+              <div class="info-title">24/7 AI Sales Specialist</div>
+              <div class="info-detail">Our RAG Chatbot is always online to answer product questions.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       Product Specs Modal
+       ========================================================================= -->
+  <div class="modal-backdrop" id="specs-modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal-box" id="specs-modal-box">
+      <button class="modal-close-btn" id="modal-close-btn" aria-label="Close specifications modal">✕</button>
+      <div id="modal-specs-content">
+        <!-- Injected dynamically -->
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       Shopping Cart Drawer
+       ========================================================================= -->
+  <div class="cart-drawer-backdrop" id="cart-drawer-backdrop" role="dialog" aria-modal="true">
+    <div class="cart-drawer" id="cart-drawer">
+      <div class="cart-drawer-header">
+        <div class="cart-header-title">
+          <span>🛒</span> Shopping Cart
+          <span class="cart-badge-pill" id="cart-drawer-badge">0 items</span>
+        </div>
+        <button class="cart-close-btn" id="cart-close-btn" aria-label="Close Cart">✕</button>
+      </div>
+      
+      <div class="cart-drawer-body" id="cart-drawer-body">
+        <div class="cart-empty-state" id="cart-empty-state">
+          <div class="cart-empty-icon">🛒</div>
+          <h4>Your cart is empty</h4>
+          <p>Browse our verified 5G smartphones and add your favorite device to cart.</p>
+          <a href="#mobiles" class="btn-primary btn-sm" id="cart-empty-browse-btn">Browse Phones</a>
+        </div>
+        <div class="cart-items-list" id="cart-items-list">
+          <!-- Dynamic Cart Items -->
+        </div>
+      </div>
+
+      <div class="cart-drawer-footer" id="cart-drawer-footer">
+        <div class="cart-summary-line">
+          <span>Delivery</span>
+          <span class="text-success font-semibold">FREE (Express)</span>
+        </div>
+        <div class="cart-summary-line cart-total-line">
+          <span>Total Amount</span>
+          <span class="cart-total-price" id="cart-total-price">₹0</span>
+        </div>
+        <button class="btn-primary btn-block btn-checkout" id="cart-checkout-btn">
+          Proceed to Checkout →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       User Authentication Modal
+       ========================================================================= -->
+  <div class="modal-backdrop" id="auth-modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal-box modal-box-auth" id="auth-modal-box">
+      <button class="modal-close-btn" id="auth-close-btn" aria-label="Close authentication modal">✕</button>
+      
+      <div class="auth-modal-header">
+        <div class="brand-icon">⚡</div>
+        <h3 class="auth-title" id="auth-modal-title">Welcome to NexPhone Studio</h3>
+        <p class="auth-subtitle">Sign in or create an account to save orders and fast checkout</p>
+      </div>
+
+      <div class="auth-tabs">
+        <button class="auth-tab-btn active" id="tab-login-btn">Log In</button>
+        <button class="auth-tab-btn" id="tab-signup-btn">Create Account</button>
+      </div>
+
+      <div class="auth-alert" id="auth-alert" style="display: none;"></div>
+
+      <!-- Login Form -->
+      <form class="auth-form" id="login-form">
+        <div class="form-group">
+          <label for="login-email">Email Address</label>
+          <input type="email" id="login-email" class="form-input" placeholder="e.g. rahul@example.com" required>
+        </div>
+        <div class="form-group">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" class="form-input" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn-primary btn-block" id="btn-submit-login">
+          Sign In
+        </button>
+      </form>
+
+      <!-- Sign Up Form -->
+      <form class="auth-form" id="signup-form" style="display: none;">
+        <div class="form-group">
+          <label for="signup-name">Full Name</label>
+          <input type="text" id="signup-name" class="form-input" placeholder="e.g. Rahul Sharma" required>
+        </div>
+        <div class="form-group">
+          <label for="signup-email">Email Address</label>
+          <input type="email" id="signup-email" class="form-input" placeholder="e.g. rahul@example.com" required>
+        </div>
+        <div class="form-group">
+          <label for="signup-password">Password (min 6 characters)</label>
+          <input type="password" id="signup-password" class="form-input" placeholder="••••••••" minlength="6" required>
+        </div>
+        <button type="submit" class="btn-primary btn-block" id="btn-submit-signup">
+          Create Account
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       Checkout & Shipping Modal
+       ========================================================================= -->
+  <div class="modal-backdrop" id="checkout-modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal-box modal-box-checkout" id="checkout-modal-box">
+      <button class="modal-close-btn" id="checkout-close-btn" aria-label="Close checkout modal">✕</button>
+      
+      <div class="checkout-header">
+        <h3>🛍️ Complete Your Order</h3>
+        <p>100% Genuine Indian Stock with 1-Year Official Warranty</p>
+      </div>
+
+      <div class="checkout-grid">
+        <!-- Left: Form -->
+        <form class="checkout-form" id="checkout-form">
+          <h4 class="form-section-title">1. Shipping & Contact Details</h4>
+          
+          <div class="form-row-2">
+            <div class="form-group">
+              <label for="checkout-name">Full Name *</label>
+              <input type="text" id="checkout-name" class="form-input" required placeholder="e.g. Rahul Sharma">
+            </div>
+            <div class="form-group">
+              <label for="checkout-phone">Phone Number (10 digits) *</label>
+              <input type="tel" id="checkout-phone" class="form-input" required placeholder="9876543210" pattern="[0-9]{10}">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="checkout-email">Email Address *</label>
+            <input type="email" id="checkout-email" class="form-input" required placeholder="rahul@example.com">
+          </div>
+
+          <div class="form-group">
+            <label for="checkout-address">Delivery Address (House, Street, City, PIN) *</label>
+            <textarea id="checkout-address" class="form-input" rows="2" required placeholder="e.g. Flat 302, Sunrise Towers, Hitech City, Hyderabad - 500081"></textarea>
+          </div>
+
+          <h4 class="form-section-title" style="margin-top: 1.25rem;">2. Payment Method</h4>
+          <div class="payment-options-group">
+            <label class="payment-radio-card active">
+              <input type="radio" name="payment-method" value="Cash on Delivery" checked>
+              <div class="payment-radio-content">
+                <span class="payment-icon">💵</span>
+                <div>
+                  <strong>Cash on Delivery (COD)</strong>
+                  <small>Pay cash, UPI, or card on delivery</small>
+                </div>
+              </div>
+            </label>
+
+            <label class="payment-radio-card">
+              <input type="radio" name="payment-method" value="UPI Express (Simulated)">
+              <div class="payment-radio-content">
+                <span class="payment-icon">⚡</span>
+                <div>
+                  <strong>Instant UPI Payment</strong>
+                  <small>Google Pay, PhonePe, Paytm, BHIM</small>
+                </div>
+              </div>
+            </label>
+          </div>
+
+          <div class="checkout-alert" id="checkout-alert" style="display: none;"></div>
+
+          <button type="submit" class="btn-primary btn-block btn-place-order" id="btn-place-order">
+            Confirm & Place Order (<span id="checkout-btn-total">₹0</span>)
+          </button>
+        </form>
+
+        <!-- Right: Summary -->
+        <div class="checkout-summary-card">
+          <h4 class="form-section-title">Order Summary</h4>
+          <div class="checkout-items-preview" id="checkout-items-preview">
+            <!-- Injected dynamically -->
+          </div>
+          <div class="checkout-pricing">
+            <div class="summary-line">
+              <span>Subtotal</span>
+              <span id="checkout-summary-subtotal">₹0</span>
+            </div>
+            <div class="summary-line">
+              <span>Delivery</span>
+              <span class="text-success font-semibold">FREE</span>
+            </div>
+            <div class="summary-line">
+              <span>GST (18% included)</span>
+              <span>Included</span>
+            </div>
+            <div class="summary-divider"></div>
+            <div class="summary-line total-line">
+              <span>Grand Total</span>
+              <strong class="total-val" id="checkout-summary-total">₹0</strong>
+            </div>
+          </div>
+
+          <div class="trust-badge-box">
+            <div class="trust-badge-item">🛡️ 7-Day Replacement Guarantee</div>
+            <div class="trust-badge-item">⚡ 100% Genuine Brand Warranty</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       Order Success Confirmation Modal
+       ========================================================================= -->
+  <div class="modal-backdrop" id="success-modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal-box modal-box-success" id="success-modal-box">
+      <button class="modal-close-btn" id="success-close-btn" aria-label="Close confirmation modal">✕</button>
+      <div class="success-content">
+        <div class="success-icon-animation">🎉</div>
+        <h3 class="success-title">Order Confirmed!</h3>
+        <p class="success-subtitle">Thank you for your order at NexPhone Studio.</p>
+        
+        <div class="order-id-pill">
+          Order ID: <strong id="success-order-number">NEX-000000</strong>
+        </div>
+
+        <p class="order-notice">
+          Your order has been recorded in our store database. You can track status anytime under <strong>My Orders</strong>.
+        </p>
+
+        <div class="success-actions">
+          <button class="btn-primary" id="success-view-orders-btn">📦 View My Orders</button>
+          <button class="btn-secondary" id="success-continue-btn">Continue Shopping</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       My Orders Modal
+       ========================================================================= -->
+  <div class="modal-backdrop" id="orders-modal-backdrop" role="dialog" aria-modal="true">
+    <div class="modal-box modal-box-orders" id="orders-modal-box">
+      <button class="modal-close-btn" id="orders-close-btn" aria-label="Close orders modal">✕</button>
+      
+      <div class="orders-modal-header">
+        <h3>📦 My Order History</h3>
+        <p>Verified orders saved in your SQLite customer database.</p>
+      </div>
+
+      <div class="orders-list-container" id="orders-list-container">
+        <div class="orders-loading" id="orders-loading">Loading your orders...</div>
+        <!-- Dynamic list of orders -->
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       ChatGPT-Style AI Chatbot Widget
+       ========================================================================= -->
+  <!-- Floating Launcher Button -->
+  <button class="chat-launcher-btn" id="chat-launcher-btn" aria-label="Open AI Shopping Assistant">
+    <span class="launcher-beacon"></span>
+    <span class="launcher-icon">✨</span>
+    <span>Ask NexBot AI</span>
+  </button>
+
+  <!-- Chat Window -->
+  <div class="chat-widget-window" id="chat-widget-window" role="complementary" aria-label="NexPhone AI Chat Assistant">
+    <!-- Chat Header -->
+    <div class="chat-header">
+      <div class="chat-header-info">
+        <div class="chat-avatar">⚡</div>
+        <div class="chat-bot-meta">
+          <div class="chat-bot-name">
+            NexBot AI
+            <span class="chat-rag-tag">RAG ACTIVE</span>
+          </div>
+          <div class="chat-bot-status">
+            <span class="status-dot-active"></span>
+            Grounded Knowledge Base
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-header-controls">
+        <button class="chat-ctrl-btn" id="chat-clear-btn" title="Clear Chat History">🗑️</button>
+        <button class="chat-ctrl-btn" id="chat-max-btn" title="Maximize Window">⤢</button>
+        <button class="chat-ctrl-btn" id="chat-close-btn" title="Close Assistant">✕</button>
+      </div>
+    </div>
+
+    <!-- Messages Area -->
+    <div class="chat-messages-stream" id="chat-messages-stream">
+      <!-- Welcome Card with Suggested Prompts -->
+      <div class="chat-welcome-card" id="chat-welcome-card">
+        <div class="welcome-icon">👋</div>
+        <h3 class="welcome-title">Welcome to NexPhone Studio!</h3>
+        <p class="welcome-text">
+          I'm your AI Mobile Specialist. My responses are strictly grounded in our store's verified product catalog, prices, and policies using Retrieval-Augmented Generation (RAG).
+        </p>
+
+        <div class="quick-prompts-label">Suggested Questions:</div>
+        <div class="quick-prompts-container">
+          <button class="prompt-chip" data-prompt-query="Which phone is best under ₹25,000?">
+            Which phone is best under ₹25,000?
+          </button>
+          <button class="prompt-chip" data-prompt-query="Which phone has the best camera?">
+            Which phone has the best camera?
+          </button>
+          <button class="prompt-chip" data-prompt-query="Compare Samsung A-series and Redmi phones.">
+            Compare Samsung A-series and Redmi phones.
+          </button>
+          <button class="prompt-chip" data-prompt-query="Which phones have 8GB RAM?">
+            Which phones have 8GB RAM?
+          </button>
+          <button class="prompt-chip" data-prompt-query="Which phone has the best battery?">
+            Which phone has the best battery?
+          </button>
+          <button class="prompt-chip" data-prompt-query="What are the current bank offers and EMI schemes?">
+            What are the current bank offers and EMI schemes?
+          </button>
+        </div>
+      </div>
+
+      <!-- Typing indicator row (hidden by default) -->
+      <div class="typing-indicator-row" id="typing-indicator-row" style="display: none;">
+        <span>NexBot is searching store database</span>
+        <div class="typing-dots">
+          <span class="typing-dot"></span>
+          <span class="typing-dot"></span>
+          <span class="typing-dot"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Input Area -->
+    <div class="chat-input-area">
+      <form class="chat-input-form" id="chat-input-form">
+        <textarea 
+          id="chat-textarea" 
+          class="chat-textarea" 
+          rows="1" 
+          placeholder="Ask a question about phones, specs, or deals..."
+          aria-label="Ask a question"
+        ></textarea>
+        <button type="submit" class="chat-send-btn" id="chat-send-btn" aria-label="Send Message" title="Send (Enter)">
+          ➤
+        </button>
+      </form>
+      <div class="chat-disclaimer">
+        Powered by local RAG • Quotes official INR (₹) prices
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       Footer
+       ========================================================================= -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="brand-logo">
+            <div class="brand-icon">⚡</div>
+            <div class="brand-name">NexPhone<span>Studio</span></div>
+          </div>
+          <p>
+            Your trusted destination for next-generation mobile technology, genuine brand warranties, and intelligent AI-guided recommendations.
+          </p>
+        </div>
+
+        <div class="footer-col">
+          <h4>Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="#home">Home</a></li>
+            <li><a href="#mobiles">All Mobiles</a></li>
+            <li><a href="#offers">Bank Offers</a></li>
+            <li><a href="#about">About Our Store</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Popular Searches</h4>
+          <ul class="footer-links">
+            <li><a href="#mobiles">Phones Under ₹25k</a></li>
+            <li><a href="#mobiles">8GB RAM Mobiles</a></li>
+            <li><a href="#mobiles">Best Camera Mobiles</a></li>
+            <li><a href="#mobiles">Battery Beasts</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-col">
+          <h4>Security & Warranty</h4>
+          <ul class="footer-links">
+            <li><a href="#about">1-Year Brand Warranty</a></li>
+            <li><a href="#about">7-Day Replacement Policy</a></li>
+            <li><a href="#offers">No-Cost EMI Options</a></li>
+            <li><a href="#about">Store Location & Timing</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>© 2026 NexPhone Studio. All rights reserved.</div>
+        <div>Built with local RAG Architecture • Vercel Ready</div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="/js/products-data.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/chat.js"></script>
+</body>
+</html>
