@@ -1,9 +1,12 @@
 /**
  * NexPhone Studio - Storefront Frontend Controller
- * Manages product rendering, filtering, interactive Cart, SQLite Auth, and Orders
+ * Manages product rendering, filtering, interactive Cart, SQLite Auth, Orders, and Firebase
  */
+import * as fb from './firebase-service.js';
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Initialize Firebase (if configured)
+  fb.initFirebase();
   // Application State
   const state = {
     searchQuery: '',
@@ -489,6 +492,18 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
+    // Check if user authenticated with Firebase client
+    if (state.token.startsWith('fb_')) {
+      const savedUser = localStorage.getItem('nex_user');
+      if (savedUser) {
+        try {
+          state.user = JSON.parse(savedUser);
+          updateAuthUI(state.user);
+          return;
+        } catch (e) {}
+      }
+    }
+
     try {
       const res = await fetch('/api/auth/me', {
         headers: { 'Authorization': `Bearer ${state.token}` }
@@ -502,6 +517,7 @@ document.addEventListener('DOMContentLoaded', () => {
         state.token = null;
         state.user = null;
         localStorage.removeItem('nex_token');
+        localStorage.removeItem('nex_user');
         updateAuthUI(null);
       }
     } catch (e) {
@@ -585,6 +601,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  // Handle Google Sign-In (Firebase)
+  const btnGoogleAuth = document.getElementById('btn-google-auth');
+  if (btnGoogleAuth) {
+    btnGoogleAuth.addEventListener('click', async () => {
+      try {
+        clearAuthAlert();
+        if (!fb.isFirebaseActive()) {
+          showAuthAlert('Firebase credentials not added to .env yet. Add your Firebase keys to connect Google Sign-In.', 'error');
+          return;
+        }
+        const user = await fb.signInWithGoogle();
+        state.user = user;
+        state.token = `fb_${user.id}`;
+        localStorage.setItem('nex_token', state.token);
+        localStorage.setItem('nex_user', JSON.stringify(user));
+        updateAuthUI(state.user);
+        closeAuthModal();
+      } catch (err) {
+        showAuthAlert(err.message || 'Google Sign-In failed', 'error');
+      }
+    });
+  }
+
   // Handle Login Form Submission
   if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
@@ -594,6 +633,17 @@ document.addEventListener('DOMContentLoaded', () => {
       const password = document.getElementById('login-password')?.value;
 
       try {
+        if (fb.isFirebaseActive()) {
+          const user = await fb.loginWithEmail(email, password);
+          state.user = user;
+          state.token = `fb_${user.id}`;
+          localStorage.setItem('nex_token', state.token);
+          localStorage.setItem('nex_user', JSON.stringify(user));
+          updateAuthUI(state.user);
+          closeAuthModal();
+          return;
+        }
+
         const res = await fetch('/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -623,6 +673,17 @@ document.addEventListener('DOMContentLoaded', () => {
       const password = document.getElementById('signup-password')?.value;
 
       try {
+        if (fb.isFirebaseActive()) {
+          const user = await fb.signUpWithEmail(name, email, password);
+          state.user = user;
+          state.token = `fb_${user.id}`;
+          localStorage.setItem('nex_token', state.token);
+          localStorage.setItem('nex_user', JSON.stringify(user));
+          updateAuthUI(state.user);
+          closeAuthModal();
+          return;
+        }
+
         const res = await fetch('/api/auth/signup', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -646,6 +707,9 @@ document.addEventListener('DOMContentLoaded', () => {
   if (dropdownLogoutBtn) {
     dropdownLogoutBtn.addEventListener('click', async () => {
       try {
+        if (fb.isFirebaseActive()) {
+          await fb.logoutFirebase();
+        }
         await fetch('/api/auth/logout', {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${state.token}` }
@@ -656,6 +720,7 @@ document.addEventListener('DOMContentLoaded', () => {
       state.token = null;
       state.user = null;
       localStorage.removeItem('nex_token');
+      localStorage.removeItem('nex_user');
       updateAuthUI(null);
     });
   }
@@ -751,7 +816,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         const data = await res.json();
-        if (!res.ok) throw new Error(data.message || 'Order failed');
+        // Sync order to Firestore if Firebase is active
+        if (fb.isFirebaseActive()) {
+          fb.saveOrderToFirestore({
+            ...orderPayload,
+            orderNumber: data.order?.orderNumber,
+            userId: state.user ? state.user.id : null,
+            totalAmount: data.order?.totalAmount
+          }).catch(err => console.warn('Firestore order sync:', err));
+        }
 
         // Clear cart
         state.cart = [];
